@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Proveedores</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background: linear-gradient(135deg, #ffb6d9, #ff69b4, #ff1493);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* MENU LATERAL */
+        .sidebar{
+            width: 250px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            color: white;
+            box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
+        }
+
+        .sidebar h2{
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 28px;
+        }
+
+        .menu{
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .menu a{
+            text-decoration: none;
+            color: white;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-size: 18px;
+        }
+
+        .menu a:hover{
+            background: white;
+            color: #ff1493;
+            transform: translateX(5px);
+        }
+
+        /* CONTENIDO */
+        .contenido{
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header{
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .header h1{
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .header p{
+            font-size: 18px;
+        }
+
+        /* TARJETAS */
+        .cards{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+            gap: 25px;
+        }
+
+        .card{
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+            transition: 0.3s;
+        }
+
+        .card:hover{
+            transform: translateY(-8px);
+        }
+
+        .card img{
+            width: 90px;
+            margin-bottom: 20px;
+        }
+
+        .card h3{
+            color: #d63384;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .card p{
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .btn{
+            display: inline-block;
+            padding: 12px 25px;
+            background: #ff1493;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .btn:hover{
+            background: #d81b78;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- MENU -->
+    <div class="sidebar">
+
+        <h2>🚚 Proveedores</h2>
+
+        <div class="menu">
+            <a href="#">🏠 Inicio</a>
+            <a href="#">📋 Lista de Proveedores</a>
+            <a href="#">➕ Registrar Proveedor</a>
+            <a href="#">📦 Pedidos</a>
+            <a href="#">📞 Contactos</a>
+            <a href="#">⚙ Configuración</a>
+        </div>
+
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="contenido">
+
+        <div class="header">
+            <h1>Gestión de Proveedores</h1>
+            <p>
+                Administra proveedores, pedidos, contactos y registros
+                comerciales dentro del sistema.
+            </p>
+        </div>
+
+        <div class="cards">
+
+            <!-- PROVEEDORES -->
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2942/2942813.png">
+
+                <h3>Proveedores</h3>
+
+                <p>
+                    Consulta y administra todos los proveedores registrados.
+                </p>
+
+                <a href="#" class="btn">Entrar</a>
+            </div>
+
+            <!-- REGISTRAR -->
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
+
+                <h3>Registrar</h3>
+
+                <p>
+                    Agrega nuevos proveedores y almacena su información.
+                </p>
+
+                <a href="#" class="btn">Registrar</a>
+            </div>
+
+            <!-- PEDIDOS -->
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png">
+
+                <h3>Pedidos</h3>
+
+                <p>
+                    Gestiona pedidos, entregas y productos suministrados.
+                </p>
+
+                <a href="#" class="btn">Ver Pedidos</a>
+            </div>
+
+            <!-- CONTACTOS -->
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png">
+
+                <h3>Contactos</h3>
+
+                <p>
+                    Consulta teléfonos, correos y datos de contacto.
+                </p>
+
+                <a href="#" class="btn">Consultar</a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pantalla Clientes</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffc1e3, #ff69b4, #ff1493);
+            padding: 40px;
+        }
+
+        /* ENCABEZADO */
+        .header{
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 35px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .header h1{
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .header p{
+            font-size: 18px;
+        }
+
+        /* BOTONES SUPERIORES */
+        .acciones{
+            display: flex;
+            gap: 20px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .acciones a{
+            text-decoration: none;
+            background: white;
+            color: #d63384;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .acciones a:hover{
+            transform: translateY(-5px);
+            background: #ffe4f1;
+        }
+
+        /* TARJETAS */
+        .contenedor-cards{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+            gap: 25px;
+        }
+
+        .card{
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+            transition: 0.3s;
+        }
+
+        .card:hover{
+            transform: translateY(-8px);
+        }
+
+        .card img{
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .card h3{
+            color: #d63384;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .card p{
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn{
+            display: inline-block;
+            padding: 12px 25px;
+            background: #ff1493;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .btn:hover{
+            background: #d81b78;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <div class="header">
+        <h1>👥 Gestión de Clientes</h1>
+
+        <p>
+            Administra registros de clientes, consultas, información
+            y accesos dentro del sistema.
+        </p>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="acciones">
+        <a href="#">➕ Nuevo Cliente</a>
+        <a href="#">📋 Ver Clientes</a>
+        <a href="#">🔎 Buscar Cliente</a>
+        <a href="#">📊 Reportes</a>
+    </div>
+
+    <!-- TARJETAS -->
+    <div class="contenedor-cards">
+
+        <!-- CLIENTES -->
+        <div class="card">
+
+            <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png">
+
+            <h3>Clientes Registrados</h3>
+
+            <p>
+                Consulta todos los clientes almacenados
+                dentro de la base de datos.
+            </p>
+
+            <a href="#" class="btn">Ingresar</a>
+
+        </div>
+
+        <!-- AGREGAR -->
+        <div class="card">
+
+            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
+
+            <h3>Agregar Cliente</h3>
+
+            <p>
+                Registra nuevos clientes y almacena
+                su información en el sistema.
+            </p>
+
+            <a href="#" class="btn">Registrar</a>
+
+        </div>
+
+        <!-- BUSCAR -->
+        <div class="card">
+
+            <img src="https://cdn-icons-png.flaticon.com/512/751/751463.png">
+
+            <h3>Buscar Cliente</h3>
+
+            <p>
+                Busca rápidamente clientes por nombre,
+                correo o identificador.
+            </p>
+
+            <a href="#" class="btn">Buscar</a>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
