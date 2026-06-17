@@ -79,10 +79,15 @@ WSGI_APPLICATION = 'mysitecabrera.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mysitecabrera',
+        'USER': 'postgres',
+        'PASSWORD': 'diana1',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
