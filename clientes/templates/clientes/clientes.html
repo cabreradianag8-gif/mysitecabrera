@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Pantalla Clientes</title>
@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
-
         *{
             margin: 0;
             padding: 0;
@@ -65,11 +64,12 @@
             background: #ffe4f1;
         }
 
-        /* TARJETAS */
+        /* CONTENEDOR DE TARJETAS */
         .contenedor-cards{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
+            align-items: start;
         }
 
         .card{
@@ -82,7 +82,7 @@
         }
 
         .card:hover{
-            transform: translateY(-8px);
+            transform: translateY(-5px);
         }
 
         .card img{
@@ -110,10 +110,52 @@
             text-decoration: none;
             border-radius: 10px;
             transition: 0.3s;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
         .btn:hover{
             background: #d81b78;
+        }
+
+        /* ESTILOS DEL FORMULARIO INTERNO */
+        .form-captura {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffc1e3;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 5px rgba(255, 20, 147, 0.2);
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* ==========================================
+           REQUERIMIENTO 1: DEFINIR EL ESTILO DE LA TABLA 
+           ========================================== */
+        table, th, td {
+            border: 2px solid rgb(234, 0, 171);
+            border-collapse: collapse;
         }
 
     </style>
@@ -121,17 +163,14 @@
 
 <body>
 
-    <!-- ENCABEZADO -->
     <div class="header">
         <h1>👥 Gestión de Clientes</h1>
-
         <p>
             Administra registros de clientes, consultas, información
             y accesos dentro del sistema.
         </p>
     </div>
 
-    <!-- BOTONES -->
     <div class="acciones">
         <a href="#">➕ Nuevo Cliente</a>
         <a href="#">📋 Ver Clientes</a>
@@ -139,55 +178,76 @@
         <a href="#">📊 Reportes</a>
     </div>
 
-    <!-- TARJETAS -->
     <div class="contenedor-cards">
 
-        <!-- CLIENTES -->
         <div class="card">
-
-            <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png">
-
+            <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Icono Clientes">
             <h3>Clientes Registrados</h3>
-
             <p>
                 Consulta todos los clientes almacenados
                 dentro de la base de datos.
             </p>
-
             <a href="#" class="btn">Ingresar</a>
-
         </div>
 
-        <!-- AGREGAR -->
         <div class="card">
-
-            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
-
+            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="Icono Registro">
             <h3>Agregar Cliente</h3>
+            
+            <form action="/pageclientes/nuevo/" method="POST" class="form-captura">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <input type="text" name="nombre" placeholder="Nombre" required>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" name="apellido" placeholder="Apellido" required>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" name="sexo" placeholder="Sexo" required>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" name="tipo" placeholder="Tipo" required>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" name="direccion" placeholder="Dirección" required>
+                </div>
 
-            <p>
-                Registra nuevos clientes y almacena
-                su información en el sistema.
-            </p>
+                <button type="submit" class="btn btn-block">Guardar</button>
+            </form>
 
-            <a href="#" class="btn">Registrar</a>
-
+            <br>
+            <h2 style="color: #7c054c;">Clientes Existentes</h2>
+            <table style="width: 100%; margin-top: 15px; text-align: left;">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Sexo</th>
+                    <th>Tipo</th>
+                </tr>
+                {% for cliente in consultaclientes %}
+                <tr>
+                    <td>{{cliente.nombre}}</td>
+                    <td>{{cliente.apellido}}</td>
+                    <td>{{cliente.sexo}}</td>
+                    <td>{{cliente.tipo}}</td>
+                </tr>
+                {% endfor %}
+            </table>
         </div>
 
-        <!-- BUSCAR -->
         <div class="card">
-
-            <img src="https://cdn-icons-png.flaticon.com/512/751/751463.png">
-
+            <img src="https://cdn-icons-png.flaticon.com/512/751/751463.png" alt="Icono Buscar">
             <h3>Buscar Cliente</h3>
-
             <p>
                 Busca rápidamente clientes por nombre,
                 correo o identificador.
             </p>
-
             <a href="#" class="btn">Buscar</a>
-
         </div>
 
     </div>
