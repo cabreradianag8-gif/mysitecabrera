@@ -87,7 +87,7 @@
         /* TARJETAS */
         .cards{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 25px;
         }
 
@@ -128,10 +128,50 @@
             text-decoration: none;
             border-radius: 10px;
             transition: 0.3s;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .btn:hover{
             background: #d81b78;
+        }
+
+        /* ESTILOS DEL FORMULARIO DE CAPTURA INTERNO */
+        .form-captura {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffb6d9;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 5px rgba(255, 20, 147, 0.2);
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* ESTILO GENERAL DE LA TABLA (Mismo formato solicitado en las capturas previas) */
+        table, th, td {
+            border: 2px solid DarkCyan;
+            border-collapse: collapse;
         }
 
     </style>
@@ -139,7 +179,6 @@
 
 <body>
 
-    <!-- MENU -->
     <div class="sidebar">
 
         <h2>🚚 Proveedores</h2>
@@ -155,7 +194,6 @@
 
     </div>
 
-    <!-- CONTENIDO -->
     <div class="contenido">
 
         <div class="header">
@@ -168,55 +206,84 @@
 
         <div class="cards">
 
-            <!-- PROVEEDORES -->
             <div class="card">
                 <img src="https://cdn-icons-png.flaticon.com/512/2942/2942813.png">
-
                 <h3>Proveedores</h3>
-
                 <p>
                     Consulta y administra todos los proveedores registrados.
                 </p>
-
                 <a href="#" class="btn">Entrar</a>
             </div>
 
-            <!-- REGISTRAR -->
             <div class="card">
                 <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png">
-
                 <h3>Registrar</h3>
-
                 <p>
                     Agrega nuevos proveedores y almacena su información.
                 </p>
 
-                <a href="#" class="btn">Registrar</a>
+                <form action="/pageproveedores/nuevo/" method="POST" class="form-captura">
+                    {% csrf_token %}
+                    
+                    <div class="input-group">
+                        <input type="text" name="nombre" placeholder="Nombre de la empresa / Proveedor" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" name="direccion" placeholder="Dirección física" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="tel" name="telefono" placeholder="Teléfono de contacto" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="email" name="email" placeholder="Correo electrónico" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" name="categoria" placeholder="Categoría de insumos" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-block">Guardar</button>
+                </form>
+
+                <br>
+                <h2 style="color: #7c054c; text-align: left; font-size: 20px; margin-top: 15px;">Proveedores Existentes</h2>
+                <table style="width: 100%; margin-top: 15px; text-align: left;">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Categoría</th>
+                    </tr>
+                    {% for proveedor in consultaproveedores %}
+                    <tr>
+                        <td>{{proveedor.nombre}}</td>
+                        <td>{{proveedor.telefono}}</td>
+                        <td>{{proveedor.email}}</td>
+                        <td>{{proveedor.categoria}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+
             </div>
 
-            <!-- PEDIDOS -->
             <div class="card">
                 <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png">
-
                 <h3>Pedidos</h3>
-
                 <p>
                     Gestiona pedidos, entregas y productos suministrados.
                 </p>
-
                 <a href="#" class="btn">Ver Pedidos</a>
             </div>
 
-            <!-- CONTACTOS -->
             <div class="card">
                 <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png">
-
                 <h3>Contactos</h3>
-
                 <p>
                     Consulta teléfonos, correos y datos de contacto.
                 </p>
-
                 <a href="#" class="btn">Consultar</a>
             </div>
 
