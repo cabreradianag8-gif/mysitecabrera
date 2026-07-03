@@ -5,7 +5,7 @@ from .models import Cliente
 
 #create your views here.
 def listaclientes(request):
-    consultaclientes=Cliente.objects.all() 
+    consultaclientes=Cliente.objects.all()
     return render(request, 'clientes/clientes.html', {'consultaclientes': consultaclientes})
 
 def createclientes(request):
@@ -18,5 +18,3 @@ def createclientes(request):
     )
     nvocliente.save()
     return redirect('/pageclientes')
-
-

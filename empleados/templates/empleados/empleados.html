@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Usuarios</title>
+    <title>Sistema de Empleados</title>
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -212,7 +212,7 @@
             box-shadow: 0 10px 25px rgba(17, 66, 50, 0.45);
         }
 
-        /* INPUTS LIMPIOS INTEGRADOS AL FORMATO COHERENTE */
+        /* INPUTS Y SELECTS LIMPIOS INTEGRADOS AL FORMATO COHERENTE */
         .form-captura {
             text-align: left;
         }
@@ -221,7 +221,8 @@
             margin-bottom: 20px;
         }
 
-        .input-group input {
+        .input-group input,
+        .input-group select {
             width: 100%;
             padding: 15px 18px; 
             border: 2px solid #cbd5e1;
@@ -232,9 +233,20 @@
             background-color: #f8fafc;
             color: #2d3748;
             font-weight: 500;
+            appearance: none; /* Quita estilos nativos del select en algunos navegadores */
         }
 
-        .input-group input:focus {
+        /* Estilo específico para el select con flecha personalizada sutil */
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234a5568'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 18px center;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
             border-color: #114232;
             box-shadow: 0 0 0 5px rgba(17, 66, 50, 0.15);
             background-color: #ffffff;
@@ -314,16 +326,16 @@
     <div class="main-container">
         
         <div class="hero-banner">
-            <h1>Gestión Avanzada de <span>Usuarios</span></h1>
-            <p>Bienvenido al ecosistema centralizado de administración corporativa. Registra nuevos usuarios al sistema, asigna credenciales de ingreso, gestiona roles empresariales y supervisa las cuentas activas con total seguridad.</p>
+            <h1>Gestión Avanzada de <span>Empleados</span></h1>
+            <p>Bienvenido al ecosistema centralizado de administración corporativa. Registra el talento humano de la empresa, gestiona información de contacto, asigna turnos laborales y mantén un control preciso sobre el estatus operacional del personal corporativo.</p>
         </div>
 
         <div class="workspace">
             
             <div class="card-panel">
-                <div class="panel-heading">✍️ Registrar Nuevo Usuario</div>
+                <div class="panel-heading">✍️ Registrar Nuevo Empleado</div>
                 
-                <form action="/pageusuarios/nuevo/" method="POST" class="form-captura">
+                <form action="/pageempleados/nuevo/" method="POST" class="form-captura">
                     {% csrf_token %}
                     
                     <div class="input-group">
@@ -335,7 +347,7 @@
                     </div>
                     
                     <div class="input-group">
-                        <input type="text" name="cargo" placeholder="Cargo u Ocupación" required>
+                        <input type="tel" name="telefono" placeholder="Teléfono de contacto" required>
                     </div>
                     
                     <div class="input-group">
@@ -343,37 +355,55 @@
                     </div>
                     
                     <div class="input-group">
-                        <input type="password" name="password" placeholder="Contraseña de acceso" required>
+                        <input type="text" name="turno" placeholder="Turno laboral (Matutino / Vespertino)" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <select name="status" required>
+                            <option value="" disabled selected hidden>Estatus de contratación</option>
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
                     </div>
 
-                    <button type="submit" class="btn-submit">Guardar Usuario</button>
+                    <button type="submit" class="btn-submit">Guardar Empleado</button>
                 </form>
             </div>
 
             <div class="card-panel">
-                <h2 class="titulo-tabla">Usuarios Registrados en Base de Datos</h2>
+                <h2 class="titulo-tabla">Personal Registrado en Base de Datos</h2>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>Nombre</th>
                                 <th>Apellido</th>
-                                <th>Cargo</th>
+                                <th>Teléfono</th>
                                 <th>Correo</th>
-                                <th>Contraseña</th> </tr>
+                                <th>Turno</th>
+                                <th>Estatus</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            {% for usuario in consultausuarios %}
+                            {% for empleado in consultaempleados %}
                             <tr>
-                                <td>{{ usuario.nombre }}</td>
-                                <td>{{ usuario.apellido }}</td>
-                                <td>{{ usuario.cargo }}</td>
-                                <td>{{ usuario.email }}</td>
-                                <td>{{ usuario.password }}</td> </tr>
+                                <td>{{ empleado.nombre }}</td>
+                                <td>{{ empleado.apellido }}</td>
+                                <td>{{ empleado.telefono }}</td>
+                                <td>{{ empleado.email }}</td>
+                                <td>{{ empleado.turno }}</td>
+                                <td>
+                                    {% if empleado.status == True or empleado.status == "true" or empleado.status == "True" %}
+                                        Activo
+                                    {% else %}
+                                        Inactivo
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" style="text-align: center; color: #718096; padding: 40px; background-color: #ffffff; font-weight: 600;">
-                                    ⚠️ No se encontraron registros de usuarios en este momento.
+                                <td colspan="6" style="text-align: center; color: #718096; padding: 40px; background-color: #ffffff; font-weight: 600;">
+                                    ⚠️ No se encontraron registros de empleados en este momento.
                                 </td>
                             </tr>
                             {% endfor %}
