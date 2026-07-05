@@ -8,3 +8,14 @@ class empleados(models.Model):
     email = models.EmailField()
     turno = models.CharField()
     status = models.BooleanField()
+
+class nomina(models.Model):
+    numperiodo = models.CharField()
+    fecha=models.DateField()
+    salario=models.FloatField()
+    percepciones=models.FloatField()
+    deducciones=models.FloatField()
+    total=models.FloatField()
+    empleado=models.ForeignKey(empleados, on_delete=models.CASCADE, related_name='nominas')
+
+    
