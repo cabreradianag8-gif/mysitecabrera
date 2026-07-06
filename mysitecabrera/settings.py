@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'usuarios',
     'empleados',
     'nomina',
-    
+    'home',
 
 ]
 
