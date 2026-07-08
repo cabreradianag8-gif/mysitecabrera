@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from .models import Ventas
 from clientes.models import Cliente
-from productos.models import Producto  # Tu modelo real con P mayúscula
+from productos.models import Producto  
 from datetime import datetime
 
 def listaventas(request):
     consultaventas = Ventas.objects.all().order_by('-id')
     listadoclientes = Cliente.objects.all()
-    listadoproductos = Producto.objects.all() # Trae tus productos con nombre, precio y stock reales
+    listadoproductos = Producto.objects.all() 
     
     return render(request, 'ventas/ventas.html', {
         'consultaventas': consultaventas,
@@ -48,7 +48,7 @@ def createventas(request):
             # Sumamos al total usando tu columna real 'precio'
             v_total += (prod_obj.precio * cant)
             
-            # --- AQUÍ DESCONTAMOS TU STOCK REAL ---
+
             prod_obj.stock -= cant
             prod_obj.save()
             
