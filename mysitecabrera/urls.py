@@ -22,12 +22,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('admin/', admin.site.urls),
-    path('pageclientes/', include('clientes.urls')),
+    path('clientes/', include('clientes.urls')),
     path('pageproveedores/', include('proveedores.urls')),
     path('pageproductos/', include('productos.urls')),
     path('pageusuarios/', include('usuarios.urls')),
     path('pageempleados/', include('empleados.urls')),
     path('pagecompras/', include('compras.urls')),
     path('pageventas/', include('ventas.urls')),
+    path('pagenomina/', include('nomina.urls')),
+    path('pagesucursal/', include('sucursal.urls')),
 ]
- 

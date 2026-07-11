@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Glow & Beauty | Velvet Portal{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --velvet-deep: #1e0b14;
+            --velvet-med: #361827;
+            --rose-gold: #e5a9a9;
+            --blush-pink: #fbcbc9;
+            --blanco-puro: #ffffff;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, var(--velvet-deep) 0%, #29101c 100%);
+            color: #fcefe6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-premium {
+            background-color: rgba(54, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(229, 169, 169, 0.2);
+            padding: 16px 32px;
+        }
+
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+            color: var(--blanco-puro);
+        }
+        
+        .brand-logo span {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 400;
+            background: linear-gradient(135deg, var(--blush-pink), var(--rose-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link-premium {
+            color: #f3dcd4 !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 10px 18px !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link-premium:hover {
+            color: var(--velvet-deep) !important;
+            background-color: var(--rose-gold);
+            box-shadow: 0 4px 15px rgba(229, 169, 169, 0.4);
+        }
+
+        .dropdown-menu-premium {
+            background-color: var(--blanco-puro);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+            padding: 12px;
+            min-width: 260px;
+        }
+
+        .dropdown-item-premium {
+            color: #2d1622;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item-premium i {
+            margin-right: 14px;
+            font-size: 1.15rem;
+            color: #8c7380;
+        }
+
+        .dropdown-item-premium:hover {
+            background-color: #fff0f3;
+            color: #a64b6b;
+        }
+
+        .workspace-canvas {
+            background-color: var(--blanco-puro);
+            color: #2d1622;
+            border-radius: 26px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+            min-height: calc(100vh - 240px);
+            padding: 40px;
+        }
+
+        .profile-tag {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(229, 169, 169, 0.3);
+            padding: 6px 16px;
+            border-radius: 50px;
+        }
+        /* --- ESTILOS PARA LAS PAGINACIONES DEL CRUD --- */
+        .pagination .page-link {
+            color: var(--velvet-med) !important;
+            border-color: rgba(229, 169, 169, 0.3) !important;
+            background-color: var(--blanco-puro) !important;
+            font-weight: 600;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--velvet-med) !important;
+            border-color: var(--velvet-med) !important;
+            color: var(--blanco-puro) !important;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #fff0f3 !important;
+            color: #7c054c !important;
+        }
+
+        /* --- DETALLE PARA REGISTROS TACHADOS (INACTIVOS) --- */
+        del {
+            color: #a04f74 !important;
+            text-decoration-color: #e5a9a9 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-premium sticky-top">
+        <div class="container-fluid">
+            
+            <a class="navbar-brand d-flex align-items-center me-4" href="/">
+                <i class="bi bi-stars fs-3 me-2" style="color: var(--rose-gold) !important;"></i>
+                <span class="brand-logo">GLOW&<span>Beauty</span></span>
+            </a>
+
+            <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    
+                    <li class="nav-item dropdown mx-1">
+                        <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropVentas" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bag-heart me-1"></i> Área Comercial
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-premium" aria-labelledby="dropVentas">
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'pageclientes' %}"><i class="bi bi-people-fill"></i> Clientes VIP</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="/pageventas/"><i class="bi bi-currency-dollar"></i> Control de Ventas</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown mx-1">
+                        <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropInventario" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-magic me-1"></i> Productos & Stock
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-premium" aria-labelledby="dropInventario">
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageproductos' %}"><i class="bi bi-flower1"></i> Catálogo de Productos</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'pageproveedores' %}"><i class="bi bi-truck"></i> Proveedores</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="/pagecompras/"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="/pageinventarios/"><i class="bi bi-box-seam"></i> Inventarios Generales</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown mx-1">
+                        <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropPersonal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-workspace me-1"></i> Equipo & Sucursales
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-premium" aria-labelledby="dropPersonal">
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageempleados' %}"><i class="bi bi-person-badge"></i> Empleados</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagenomina' %}"><i class="bi bi-credit-card-2-front"></i> Gestión de Nómina</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagesucursal' %}"><i class="bi bi-geo-alt"></i> Sucursales</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown mx-1">
+                        <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropConfig" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-shield-lock me-1"></i> Sistema
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-premium dropdown-menu-end" aria-labelledby="dropConfig">
+                            <li><a class="dropdown-item dropdown-item-premium" href="/pageusuarios/"><i class="bi bi-person-gear"></i> Usuarios del Sistema</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="/pagegrupos/"><i class="bi bi-shield-check"></i> Grupos y Permisos</a></li>
+                        </ul>
+                    </li>
+
+                </ul>
+
+                <div class="d-flex align-items-center profile-tag">
+                    <div class="text-end me-3">
+                        <p class="mb-0 fw-bold text-white small">Valeria Mendoza</p>
+                        <p class="mb-0 extra-small" style="font-size: 0.7rem; font-weight: 700; color: var(--rose-gold) !important;">BEAUTY MANAGER</p>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150" 
+                         alt="Avatar" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5 flex-grow-1">
+        <div class="workspace-canvas">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

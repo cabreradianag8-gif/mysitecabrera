@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | Panel de Control GLOW{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- SECCIÓN DE BIENVENIDA -->
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark" style="font-family: 'Playfair Display', serif;">¡Hola de nuevo, Valeria!</h1>
+            <p class="text-muted fs-5 mb-0">Este es el estado actual de tu salón boutique para hoy.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-light text-dark border p-2 px-3 rounded-pill fw-semibold shadow-sm">
+                <i class="bi bi-calendar3 text-danger me-2"></i><span id="liveDate">Sábado, 11 de Julio</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- TARJETAS DE ACCESO RÁPIDO (MENÚ PRINCIPAL VISUAL) -->
+    <h3 class="h5 fw-bold text-uppercase tracking-wider text-muted mb-4" style="font-size: 0.8rem; letter-spacing: 1.5px;">Módulos del Sistema</h3>
+    <div class="row g-4">
+        
+        <!-- CARD: CLIENTES -->
+        <div class="col-6 col-lg-3">
+            <a href="/pageclientes/" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-3 text-center bg-light-card hover-lift transition-all" style="background-color: #fff0f3; border: 1px solid rgba(229, 169, 169, 0.2) !important;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-people-fill fs-3 text-danger" style="color: #a64b6b !important;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Clientes VIP</h5>
+                    <p class="text-muted extra-small mb-0">Gestión y registro</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- CARD: PRODUCTOS -->
+        <div class="col-6 col-lg-3">
+            <a href="/pageproductos/" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-3 text-center hover-lift transition-all" style="background-color: #f7eff2; border: 1px solid rgba(229, 169, 169, 0.2) !important;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-flower1 fs-3" style="color: #8c7380 !important;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Catálogo</h5>
+                    <p class="text-muted extra-small mb-0">Servicios y Stock</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- CARD: EMPLEADOS -->
+        <div class="col-6 col-lg-3">
+            <a href="/pageempleados/" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-3 text-center hover-lift transition-all" style="background-color: #fcf5f2; border: 1px solid rgba(229, 169, 169, 0.2) !important;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-person-badge fs-3" style="color: #d99696 !important;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Colaboradores</h5>
+                    <p class="text-muted extra-small mb-0">Asistencias y Equipo</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- CARD: VENTAS -->
+        <div class="col-6 col-lg-3">
+            <a href="/pageventas/" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm rounded-4 p-3 text-center hover-lift transition-all" style="background-color: #f3f7f4; border: 1px solid rgba(169, 229, 189, 0.2) !important;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-currency-dollar fs-3 text-success"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Caja y Ventas</h5>
+                    <p class="text-muted extra-small mb-0">Ingresos del día</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- SECCIÓN INTERMEDIA: RESUMEN INFORMATIVO -->
+    <div class="row mt-5 g-4">
+        <!-- Panel izquierdo: Estado de operaciones -->
+        <div class="col-md-7">
+            <div class="p-4 rounded-4 border bg-light h-100">
+                <h4 class="fw-bold text-dark mb-3" style="font-family: 'Playfair Display', serif;">Acciones Recomendadas</h4>
+                <div class="d-flex align-items-center p-3 bg-white rounded-3 shadow-sm mb-3">
+                    <i class="bi bi-plus-circle-fill text-danger fs-4 me-3" style="color: #a64b6b !important;"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">¿Nuevo cliente en recepción?</h6>
+                        <small class="text-muted">Añádelo rápidamente desde el módulo de Clientes VIP.</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center p-3 bg-white rounded-3 shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">Revisión de Inventarios</h6>
+                        <small class="text-muted">Recuerda actualizar los insumos al finalizar el turno.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Frase e Imagen Inspiracional -->
+        <div class="col-md-5">
+            <div class="card border-0 rounded-4 text-white overflow-hidden shadow h-100 position-relative" style="background: linear-gradient(135deg, #361827 0%, #1e0b14 100%); min-height: 200px;">
+                <div class="card-body p-4 d-flex flex-column justify-content-center position-relative" style="z-index: 2;">
+                    <i class="bi bi-quote fs-1 text-muted opacity-25 position-absolute top-0 start-0 m-3"></i>
+                    <h5 class="fst-italic fw-light lh-base mb-3" style="font-family: 'Playfair Display', serif;">"La belleza comienza en el momento en que decides ser tú misma."</h5>
+                    <p class="small text-uppercase fw-bold tracking-widest mb-0" style="color: #e5a9a9; letter-spacing: 1px;">— Coco Chanel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pequeño toque interactivo CSS para las tarjetas -->
+<style>
+    .hover-lift {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    .extra-small {
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

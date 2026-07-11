@@ -1,21 +1,13 @@
 from django.db import models
 
-# Create your models here.
 class empleados(models.Model):
-    nombre = models.CharField()
-    apellido = models.CharField()
-    telefono = models.CharField()
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    departamento = models.CharField(max_length=100)
+    telefono = models.CharField(max_length=20)
     email = models.EmailField()
-    turno = models.CharField()
-    status = models.BooleanField()
+    turno = models.CharField(max_length=100)
+    status = models.BooleanField(default=True)  
 
-class nomina(models.Model):
-    numperiodo = models.CharField()
-    fecha=models.DateField()
-    salario=models.FloatField()
-    percepciones=models.FloatField()
-    deducciones=models.FloatField()
-    total=models.FloatField()
-    empleado=models.ForeignKey(empleados, on_delete=models.CASCADE, related_name='nominas')
-
-    
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
