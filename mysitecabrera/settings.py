@@ -40,13 +40,15 @@ INSTALLED_APPS = [
     'clientes',
     'proveedores',
     'productos',
-    'usuarios',
     'empleados',
     'nomina',
     'home',
     'compras',
     'ventas',
     'sucursal',
+    'inventarios',
+    'grupos',
+    'usuarios'
 
 ]
 

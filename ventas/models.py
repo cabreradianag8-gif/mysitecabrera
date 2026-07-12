@@ -1,15 +1,32 @@
 from django.db import models
-from clientes.models import Cliente       # Importamos tu modelo de clientes
-from productos.models import Producto  # Importamos tu modelo de productos
+from clientes.models import Cliente
+from productos.models import Producto
 
 class Ventas(models.Model):
+    ESTATUS_CHOICES = [
+        ('Completada', 'Completada'),
+        ('Cancelada', 'Cancelada'),
+    ]
+
     folio = models.CharField(max_length=50, unique=True)
     fecha = models.DateField(auto_now_add=True)
-    total = models.DecimalField(max_length=10, max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Completada')
     
-    # RELACIÓN MUCHOS A MUCHOS: Un cliente puede tener muchas ventas, y una venta muchos productos
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    productos = models.ManyToManyField(Producto) # Genera la tabla relacional intermedia
+    # Un cliente puede registrar múltiples ventas en el sistema
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='mis_ventas')
+    
+    # Relación de Muchos a Muchos explícita usando la tabla intermedia DetalleVenta
+    productos = models.ManyToManyField(Producto, through='DetalleVenta', related_name='ventas_asociadas')
 
     def __str__(self):
-        return f"Venta Folio: {self.folio}"
+        return f"Venta {self.folio} - {self.cliente.nombre} ({self.estatus})"
+
+
+class DetalleVenta(models.Model):
+    venta = models.ForeignKey(Ventas, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.venta.folio} -> {self.producto.nombre} ({self.cantidad} pzs)"

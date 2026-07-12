@@ -164,7 +164,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-premium" aria-labelledby="dropVentas">
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'pageclientes' %}"><i class="bi bi-people-fill"></i> Clientes VIP</a></li>
-                            <li><a class="dropdown-item dropdown-item-premium" href="/pageventas/"><i class="bi bi-currency-dollar"></i> Control de Ventas</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageventas' %}"><i class="bi bi-currency-dollar"></i> Control de Ventas</a></li>
                         </ul>
                     </li>
 
@@ -175,8 +175,8 @@
                         <ul class="dropdown-menu dropdown-menu-premium" aria-labelledby="dropInventario">
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageproductos' %}"><i class="bi bi-flower1"></i> Catálogo de Productos</a></li>
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'pageproveedores' %}"><i class="bi bi-truck"></i> Proveedores</a></li>
-                            <li><a class="dropdown-item dropdown-item-premium" href="/pagecompras/"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</a></li>
-                            <li><a class="dropdown-item dropdown-item-premium" href="/pageinventarios/"><i class="bi bi-box-seam"></i> Inventarios Generales</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagecompras' %}"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageinventarios' %}"><i class="bi bi-box-seam"></i> Inventarios Generales</a></li>
                         </ul>
                     </li>
 
@@ -196,8 +196,8 @@
                             <i class="bi bi-shield-lock me-1"></i> Sistema
                         </a>
                         <ul class="dropdown-menu dropdown-menu-premium dropdown-menu-end" aria-labelledby="dropConfig">
-                            <li><a class="dropdown-item dropdown-item-premium" href="/pageusuarios/"><i class="bi bi-person-gear"></i> Usuarios del Sistema</a></li>
-                            <li><a class="dropdown-item dropdown-item-premium" href="/pagegrupos/"><i class="bi bi-shield-check"></i> Grupos y Permisos</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageusuarios' %}"><i class="bi bi-person-gear"></i> Usuarios del Sistema</a></li>
+                            <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagegrupos' %}"><i class="bi bi-shield-check"></i> Grupos y Permisos</a></li>
                         </ul>
                     </li>
 

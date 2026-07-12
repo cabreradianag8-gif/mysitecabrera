@@ -1,208 +1,312 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>CRM Corporativo - Módulo Ventas</title>
-    <base href="/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { min-height: 100vh; background-color: #072314; color: #2d3748; display: flex; flex-direction: column; padding-bottom: 40px; }
-        .navbar { background-color: #04140b; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0d3822; }
-        .navbar-brand { font-size: 22px; font-weight: bold; color: #ffffff; }
-        .navbar-brand span { color: #4ade80; }
-        .nav-buttons { display: flex; gap: 12px; }
-        .nav-btn { background-color: rgba(255, 255, 255, 0.08); color: #ffffff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; text-decoration: none; }
-        .nav-btn.active { background-color: #ffffff; color: #04140b; font-weight: bold; }
-        .main-container { max-width: 1400px; width: 100%; margin: 0 auto; padding: 30px 20px; }
-        .hero-banner { background: linear-gradient(135deg, rgba(25, 45, 34, 0.6) 0%, rgba(10, 25, 17, 0.8) 100%); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 25px 35px; color: white; margin-bottom: 35px; }
-        .hero-banner h1 span { color: #facc15; }
-        .workspace { display: grid; grid-template-columns: 1fr; gap: 35px; align-items: start; }
-        @media (min-width: 1200px) { .workspace { grid-template-columns: 1fr 1.3fr; } }
-        .card-panel { background: #ffffff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); }
-        .panel-heading { font-size: 16px; color: #072314; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .input-group { margin-bottom: 14px; }
-        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; }
-        .input-group select { width: 100%; padding: 11px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; }
-        .btn-add { background-color: #10b981; color: white; border: none; padding: 10px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-submit { width: 100%; padding: 14px; background-color: #0f4c3a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
-        .btn-remove { background-color: #ef4444; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
-        .tabla-conceptos { width: 100%; margin-top: 15px; border-collapse: collapse; }
-        .tabla-conceptos th { background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 10px; text-align: left; }
-        .tabla-conceptos td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-        .total-box { background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; margin-top: 15px; text-align: right; font-size: 18px; font-weight: bold; color: #072314; }
-        .table-container { border-radius: 10px; overflow: hidden; border: 1px solid #edf2f7; }
-        table.historial { width: 100%; border-collapse: collapse; }
-        table.historial th { background-color: #072314; color: #ffffff; padding: 12px 14px; font-size: 11px; text-transform: uppercase; text-align: left; }
-        table.historial td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .tag-prod { display: inline-block; background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; font-weight: bold; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <div class="navbar">
-        <div class="navbar-brand">🏢 CRM <span>Corporativo</span></div>
-        <div class="nav-buttons">
-            <a href="/" class="nav-btn">🏠 Inicio</a>
-            <button class="nav-btn active">🛒 Módulo Ventas</button>
-        </div>
-    </div>
+{% block title %}Punto de Venta | Glow & Beauty{% endblock %}
 
-    <div class="main-container">
-        <div class="hero-banner">
-            <h1>Cálculo de Venta y <span>Descuento de Stock</span></h1>
-            <p>Estructura adaptada al estilo de la maestra. Usando campos reales 'precio' y 'stock' obtenidos de tu base de datos.</p>
-        </div>
-
-        <div class="workspace">
-            <div class="card-panel">
-                <div class="panel-heading">🛒 Nueva Transacción</div>
-                <form action="/pageventas/nuevo/" method="POST" id="formVenta">
-                    {% csrf_token %}
-                    
-                    <div class="input-group">
-                        <label>Asignar Cliente:</label>
-                        <select name="cliente" required>
-                            <option value="" disabled selected>Seleccione el Cliente...</option>
-                            {% for c in listadoclientes %}
-                                <option value="{{ c.id }}">{{ c.nombre }} {{ c.apellido }}</option>
-                            {% endfor %}
-                        </select>
+{% block content %}
+<div class="row">
+    <div class="col-md-5 border-end pe-4">
+        <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+            <i class="bi bi-cash-coin me-2"></i>Nueva Venta
+        </h2>
+        
+        <form action="{% url 'nueva_venta' %}" method="POST" id="formVenta">
+            {% csrf_token %}
+            
+            <div class="card mb-4 shadow-sm border-0 text-white" style="background-color: #2d1622;">
+                <div class="card-body p-3" style="font-size: 0.85rem;">
+                    <div class="row text-center">
+                        <div class="col-6 border-end border-secondary">
+                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Folio Nota</span>
+                            <span class="fw-bold fs-6 text-warning">{{ proximo_folio }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Fecha Operación</span>
+                            <span class="fw-bold fs-6">Hoy</span>
+                        </div>
                     </div>
-
-                    <div class="input-group" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                        <label>Seleccionar Producto:</label>
-                        <select id="selectorProductos">
-                            <option value="" disabled selected>Buscar producto...</option>
-                            {% for p in listadoproductos %}
-                                <option value="{{ p.id }}" data-precio="{{ p.precio }}" data-nombre="{{ p.nombre }}">{{ p.nombre }} - (${{ p.precio }}) - Disponibles: {{ p.stock }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="button" class="btn-add" onclick="agregarProducto()">+ Añadir al Detalle</button>
-                    </div>
-
-                    <table class="tabla-conceptos">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th width="100">Precio</th>
-                                <th width="90">Cantidad</th>
-                                <th width="100">Subtotal</th>
-                                <th width="40"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="coleccionConceptos">
-                            </tbody>
-                    </table>
-
-                    <div class="total-box">
-                        Gran Total: $<span id="txtGranTotal">0.00</span>
-                    </div>
-
-                    <button type="submit" class="btn-submit">Guardar Venta</button>
-                </form>
-            </div>
-
-            <div class="card-panel">
-                <div class="panel-heading">Historial de Ventas Cruzadas</div>
-                <div class="table-container">
-                    <table class="historial">
-                        <thead>
-                            <tr>
-                                <th>Folio Único</th>
-                                <th>Cliente</th>
-                                <th>Productos Asignados</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for v in consultaventas %}
-                            <tr>
-                                <td style="font-weight: bold; color: #10b981;">{{ v.folio }}</td>
-                                <td>{{ v.cliente.nombre }} {{ v.cliente.apellido }}</td>
-                                <td>
-                                    {% for prod in v.productos.all %}
-                                        <span class="tag-prod">{{ prod.nombre }} (${{ prod.precio }})</span>
-                                    {% endfor %}
-                                </td>
-                                <td style="font-weight: bold; color: #2563eb;">${{ v.total }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">No hay transacciones guardadas.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
             </div>
-        </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Buscar y Seleccionar Cliente</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-search"></i></span>
+                    <input type="text" id="buscadorCliente" class="form-control" placeholder="Escribe el nombre para filtrar..." list="datalistClientes" required>
+                    <datalist id="datalistClientes">
+                        {% for cli in lista_clientes %}
+                            <option data-id="{{ cli.id }}" value="👤 {{ cli.nombre }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    <input type="hidden" name="cliente_id" id="cliente_id_hidden" required>
+                </div>
+                <div id="clienteFeedback" class="form-text text-success small d-none"><i class="bi bi-check-circle-fill"></i> Cliente validado correctamente.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Seleccionar del Catálogo</label>
+                <select id="selectProductosVenta" class="form-select text-dark shadow-sm" multiple style="height: 120px;" required>
+                    {% for prod in lista_productos %}
+                        <option value="{{ prod.id }}" data-nombre="{{ prod.nombre }}" data-precio="{{ prod.precio }}" data-stock="{{ prod.stock }}">
+                            📦 {{ prod.nombre }} (Disponibles: {{ prod.stock }} | ${{ prod.precio }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text text-muted extra-small" style="font-size: 0.75rem;">Mantén presionado Ctrl (o Cmd en Mac) para elegir múltiples artículos.</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold mb-1">Conceptos a Despachar</label>
+                <div class="border rounded bg-white shadow-sm overflow-hidden">
+                    <div class="table-responsive" style="max-height: 240px;">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;" id="tablaVenta">
+                            <thead class="table-dark" style="background-color: #361827;">
+                                <tr>
+                                    <th class="ps-3" style="width: 50%;">Artículo / Stock</th>
+                                    <th class="text-end" style="width: 25%;">P. Unitario</th>
+                                    <th class="text-center" style="width: 25%;">Cant.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-vacio-venta">
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="bi bi-box-seam d-block fs-3 mb-2 text-secondary"></i>
+                                        Selecciona productos en el listado superior.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded mb-4 shadow-sm" style="background-color: #fff0f3; border: 1px solid #e5a9a9;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark fs-6">Total a Liquidar:</span>
+                    <span class="fs-4 fw-bold text-success" id="txtTotalVenta">$0.00</span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
+                <i class="bi bi-check2-circle me-1"></i> Completar Venta y Descontar Stock
+            </button>
+        </form>
     </div>
 
-    <script>
-        function agregarProducto() {
-            const select = document.getElementById('selectorProductos');
-            if(select.selectedIndex === 0) return;
-            
-            const option = select.options[select.selectedIndex];
-            const id = option.value; 
-            const nombre = option.getAttribute('data-nombre'); 
-            const precio = parseFloat(option.getAttribute('data-precio')) || 0; 
-            
-            if(document.getElementById('fila_' + id)) {
-                alert("Este producto ya fue añadido.");
-                return;
+    <div class="col-md-7 ps-4">
+        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Historial General de Ventas</h2>
+        
+        <form method="GET" action="{% url 'rutapageventas' %}" class="mb-3">
+            <div class="input-group shadow-sm">
+                <input type="text" name="buscar_folio" class="form-control" placeholder="Buscar orden por folio exacto..." value="{{ query }}">
+                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                {% if query %}
+                    <a href="{% url 'rutapageventas' %}" class="btn btn-outline-danger">Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="table-responsive shadow-sm rounded mb-3">
+            <table class="table table-hover align-middle" style="font-size: 0.82rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th>Folio / Fecha</th>
+                        <th>Cliente</th>
+                        <th>Desglose de Artículos</th>
+                        <th>Total Cobrado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vta in page_obj %}
+                    <tr {% if vta.estatus == 'Cancelada' %}style="background-color: #f8f9fa;"{% endif %}>
+                        <td>
+                            <strong>{{ vta.folio }}</strong><br>
+                            <small class="text-muted">{{ vta.fecha|date:"d/m/Y" }}</small><br>
+                            {% if vta.estatus == 'Completada' %}
+                                <span class="badge bg-success p-1 mt-1" style="font-size: 0.65rem;">Completada</span>
+                            {% else %}
+                                <span class="badge bg-danger p-1 mt-1" style="font-size: 0.65rem;">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">👤 {{ vta.cliente.nombre }}</span></td>
+                        <td>
+                            <div class="p-2 rounded bg-light border">
+                                {% for item in vta.detalleventa_set.all %}
+                                    <div class="mb-1 text-dark" style="font-size: 0.78rem;">
+                                        • {% if vta.estatus == 'Cancelada' %}<del>{% endif %}{{ item.producto.nombre }}{% if vta.estatus == 'Cancelada' %}</del>{% endif %}
+                                        <strong class="text-danger">({{ item.cantidad }} pzs)</strong>
+                                        <span class="text-muted"> c/u: ${{ item.producto.precio }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td><strong class="text-success fs-6">${{ vta.total }}</strong></td>
+                        <td>
+                            {% if vta.estatus == 'Completada' %}
+                                <a href="{% url 'cancelar_venta' vta.id %}" class="btn btn-sm btn-outline-danger fw-bold"
+                                   onclick="return confirm('¿Seguro de cancelar esta venta? Los artículos regresarán al inventario.');" style="font-size: 0.7rem;">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </a>
+                            {% else %}
+                                <span class="text-muted small italic">Revertido</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No hay registros de ventas que coincidan.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Anterior</a></li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&buscar_folio={{ query }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const buscadorCliente = document.getElementById("buscadorCliente");
+    const clienteHidden = document.getElementById("cliente_id_hidden");
+    const clienteFeedback = document.getElementById("clienteFeedback");
+    const selectProductosVenta = document.getElementById("selectProductosVenta");
+    const tablaVenta = document.getElementById("tablaVenta").getElementsByTagName('tbody')[0];
+    
+    // --- LÓGICA DEL BUSCADOR DE CLIENTES ---
+    buscadorCliente.addEventListener("input", function() {
+        const valorInput = this.value;
+        const opciones = document.querySelectorAll("#datalistClientes option");
+        let encontrado = false;
+        
+        opciones.forEach(opcion => {
+            if (opcion.value === valorInput) {
+                clienteHidden.value = opcion.getAttribute("data-id");
+                encontrado = true;
             }
+        });
+        
+        if (encontrado) {
+            buscadorCliente.classList.remove("is-invalid");
+            buscadorCliente.classList.add("is-valid");
+            clienteFeedback.classList.remove("d-none");
+        } else {
+            clienteHidden.value = ""; 
+            buscadorCliente.classList.remove("is-valid");
+            clienteFeedback.classList.add("d-none");
+        }
+    });
+
+    // Validar en el envío del formulario que el cliente seleccionado sea real
+    document.getElementById("formVenta").addEventListener("submit", function(e) {
+        if (!clienteHidden.value) {
+            e.preventDefault();
+            buscadorCliente.classList.add("is-invalid");
+            buscadorCliente.focus();
+            alert("Por favor, selecciona un cliente válido de la lista desplegable.");
+        }
+    });
+
+    // --- LÓGICA DE LA TABLA DE CONCEPTOS ORDENADA ---
+    selectProductosVenta.addEventListener("change", function() {
+        tablaVenta.innerHTML = "";
+        const seleccionados = Array.from(selectProductosVenta.selectedOptions);
+        
+        if(seleccionados.length === 0) {
+            tablaVenta.innerHTML = `
+                <tr id="row-vacio-venta">
+                    <td colspan="3" class="text-center text-muted py-4">
+                        <i class="bi bi-box-seam d-block fs-3 mb-2 text-secondary"></i>
+                        Selecciona productos en el listado superior.
+                    </td>
+                </tr>`;
+            calcularTotalesVenta();
+            return;
+        }
+        
+        seleccionados.forEach(opcion => {
+            const id = opcion.value;
+            const nombre = opcion.getAttribute("data-nombre");
+            const precio = parseFloat(opcion.getAttribute("data-precio")) || 0;
+            const stockMax = parseInt(opcion.getAttribute("data-stock")) || 0;
             
-            const tbody = document.getElementById('coleccionConceptos');
-            const fila = document.createElement('tr');
-            fila.id = 'fila_' + id;
-            fila.className = "fila-item";
-            
+            const fila = document.createElement("tr");
             fila.innerHTML = `
-                <td>
-                    <input type="hidden" name="productos_seleccionados[]" value="${id}">
-                    <strong>${nombre}</strong>
+                <td class="ps-3 py-3">
+                    <span class="d-block fw-bold text-dark mb-1">${nombre}</span>
+                    <input type="hidden" name="producto_ids" value="${id}">
+                    <input type="hidden" class="input-precio" value="${precio}">
+                    <span class="text-muted small" style="font-size: 0.75rem;">Disponibles: <span class="badge bg-secondary px-2">${stockMax} pzs</span></span>
                 </td>
-                <td>$${precio.toFixed(2)}</td>
-                <td>
-                    <input type="number" name="cantidades[]" value="1" min="1" style="width:70px; padding:5px; border:1px solid #cbd5e1; border-radius:4px;" onchange="calcularGranTotal()" onkeyup="calcularGranTotal()">
-                </td>
-                <td class="col-subtotal" data-precio="${precio}">$${precio.toFixed(2)}</td>
-                <td>
-                    <button type="button" class="btn-remove" onclick="removerFila('${id}')">X</button>
+                <td class="text-end fw-bold text-secondary pe-3">$${precio.toFixed(2)}</td>
+                <td class="text-center px-3">
+                    <input type="number" min="1" max="${stockMax}" name="cantidades_prod" 
+                           class="form-control form-control-sm input-cantidad-v text-center mx-auto fw-bold text-dark" 
+                           value="1" data-stock="${stockMax}" required style="max-width: 80px; border-color: #ced4da;">
                 </td>
             `;
-            
-            tbody.appendChild(fila);
-            calcularGranTotal();
-        }
-
-        function removerFila(id) {
-            const fila = document.getElementById('fila_' + id);
-            if(fila) fila.remove();
-            calcularGranTotal();
-        }
-
-        function calcularGranTotal() {
-            let totalGeneral = 0;
-            const filas = document.querySelectorAll('.fila-item');
-            
-            filas.forEach(fila => {
-                const inputCantidad = fila.querySelector('input[type="number"]');
-                const celdaSubtotal = fila.querySelector('.col-subtotal');
-                const precioUnitario = parseFloat(celdaSubtotal.getAttribute('data-precio'));
-                
-                let cantidad = parseInt(inputCantidad.value);
-                if(isNaN(cantidad) || cantidad < 1) cantidad = 1;
-                
-                const subtotal = precioUnitario * cantidad;
-                celdaSubtotal.innerText = '$' + subtotal.toFixed(2);
-                totalGeneral += subtotal;
+            tablaVenta.appendChild(fila);
+        });
+        
+        Array.from(tablaVenta.querySelectorAll('.input-cantidad-v')).forEach(input => {
+            input.addEventListener('input', function() {
+                validarStockFila(this);
+                calcularTotalesVenta();
             });
-            
-            document.getElementById('txtGranTotal').innerText = totalGeneral.toFixed(2);
+        });
+        calcularTotalesVenta();
+    });
+    
+    // Alerta interactiva de falta de Stock
+    function validarStockFila(input) {
+        const stockMax = parseInt(input.getAttribute("data-stock")) || 0;
+        const cantPedida = parseInt(input.value) || 0;
+        
+        if (cantPedida > stockMax) {
+            input.setCustomValidity(`¡Stock insuficiente! Solo quedan ${stockMax} unidades de este artículo.`);
+            input.classList.add("is-invalid");
+            input.reportValidity();
+        } else {
+            input.setCustomValidity("");
+            input.classList.remove("is-invalid");
         }
-    </script>
-</body>
-</html>
+    }
+    
+    function calcularTotalesVenta() {
+        let totalAcumulado = 0;
+        const filas = tablaVenta.querySelectorAll("tr");
+        
+        if(filas.length > 0 && !document.getElementById("row-vacio-venta")) {
+            filas.forEach(fila => {
+                const precioInput = fila.querySelector(".input-precio");
+                const cantidadInput = fila.querySelector(".input-cantidad-v");
+                if (precioInput && cantidadInput) {
+                    const precio = parseFloat(precioInput.value) || 0;
+                    const cantidad = parseInt(cantidadInput.value) || 0;
+                    totalAcumulado += (precio * cantidad);
+                }
+            });
+        }
+        document.getElementById("txtTotalVenta").innerText = `$${totalAcumulado.toFixed(2)}`;
+    }
+});
+</script>
+{% endblock %}

@@ -1,11 +1,6 @@
 from django.db import models
-
-class grupos_grupos(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.CharField(max_length=255)
-    fecha_creacion = models.DateField()
-    estatus = models.BooleanField(default=True)
-
+from grupos.models import grupos_grupos
+from empleados.models import empleados as EmpleadoModel # Importamos tu clase exacta de la foto
 
 class grupos_usuarios(models.Model):
     nombre = models.CharField(max_length=100)
@@ -13,5 +8,13 @@ class grupos_usuarios(models.Model):
     passwd = models.CharField(max_length=50)
     correo = models.EmailField()
     
+    # Relación 1 a Muchos
+    grupo = models.ForeignKey(grupos_grupos, on_delete=models.PROTECT)
     
-    grupo = models.ForeignKey(grupos_grupos, on_delete=models.CASCADE)
+    # Relación 1 a 1 con tu clase de empleados
+    empleado = models.OneToOneField(EmpleadoModel, on_delete=models.CASCADE, null=True, blank=True)
+
+    estatus = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.usuario

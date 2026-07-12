@@ -1,169 +1,215 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión Corporativa de Usuarios y Grupos</title>
-    <base href="/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { min-height: 100vh; background-color: #0f2e24; color: #2d3748; display: flex; flex-direction: column; }
-        .navbar { background: linear-gradient(90deg, #071913 0%, #0f3d2f 100%); padding: 25px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3); border-bottom: 4px solid #1b5e46; }
-        .navbar-brand { font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
-        .navbar-brand span { color: #48bb78; }
-        .main-container { max-width: 1600px; width: 100%; margin: 0 auto; padding: 40px 20px; }
-        .hero-banner { background: linear-gradient(135deg, rgba(7, 25, 19, 0.95) 0%, rgba(17, 66, 50, 0.85) 100%); border-radius: 16px; padding: 30px; color: white; margin-bottom: 30px; }
-        
-        .workspace { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: start; }
-        @media (min-width: 1024px) { .workspace { grid-template-columns: 1fr 1fr; } }
-        
-        .card-panel { background: #ffffff; border-radius: 16px; padding: 30px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); position: relative; overflow: hidden; }
-        .card-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: linear-gradient(to bottom, #48bb78, #114232); }
-        .panel-heading, .titulo-tabla { font-size: 20px; color: #114232; font-weight: 800; margin-bottom: 25px; border-bottom: 2px solid #edf2f0; padding-bottom: 10px; }
-        
-        .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #114232 0%, #1b5e46 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .btn-submit:hover { opacity: 0.9; }
-        
-        .input-group { margin-bottom: 18px; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 15px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 14px; background-color: #f8fafc; color: #2d3748; }
-        .input-group select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M0 3l5 5 5-5z' fill='%234a5568'/></svg>"); background-repeat: no-repeat; background-position: right 15px center; }
-        
-        .table-container { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: linear-gradient(180deg, #114232 0%, #0b2f24 100%); color: #ffffff; padding: 14px 18px; font-weight: 700; text-transform: uppercase; font-size: 12px; text-align: left; }
-        td { padding: 14px 18px; border-bottom: 1px solid #edf2f0; font-size: 14px; background-color: #ffffff; }
-        tr:nth-child(even) td { background-color: #f8fafc; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <div class="navbar">
-        <div class="navbar-brand">🏢 CRM <span>Corporativo</span></div>
-    </div>
+{% block title %}Usuarios del Sistema | Glow & Beauty{% endblock %}
 
-    <div class="main-container">
-        <div class="hero-banner">
-            <h1>Panel de Control Relacional: <span>PostgreSQL Activo</span></h1>
-        </div>
-
-        <div class="workspace">
+{% block content %}
+<div class="row">
+    <div class="col-md-5 border-end pe-4">
+        {% if usuario_a_editar %}
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-person-gear me-2"></i>Editar Usuario
+            </h2>
+            <form action="{% url 'actualizar_usuario' usuario_a_editar.id %}" method="POST">
+        {% else %}
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
+            </h2>
+            <form action="{% url 'nuevo_usuario' %}" method="POST">
+        {% endif %}
+            {% csrf_token %}
             
-            <div class="workspace-column">
-                <div class="card-panel" style="margin-bottom: 30px;">
-                    <div class="panel-heading">📁 Registrar Nuevo Grupo (ID Auto)</div>
-                    <form action="/pageusuarios/nuevogrupo/" method="POST">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" name="nombre_grupo" placeholder="Nombre del Grupo (Ej: Ventas)" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" name="descripcion" placeholder="Descripción del grupo..." required>
-                        </div>
-                        <button type="submit" class="btn-submit">Guardar Grupo en BD</button>
-                    </form>
-                </div>
-
-                <div class="card-panel">
-                    <h2 class="titulo-tabla">Tabla: Grupos en PostgreSQL</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID Real</th>
-                                    <th>Nombre del Grupo</th>
-                                    <th>Descripción</th>
-                                    <th>Fecha Registro</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for g in listadogrupos %}
-                                <tr>
-                                    <td style="font-weight: bold; color: #48bb78;">{{ g.id }}</td>
-                                    <td>{{ g.nombre }}</td>
-                                    <td>{{ g.descripcion }}</td>
-                                    <td>{{ g.fecha_creacion }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 20px; color: #718096;">
-                                        ⚠️ No hay grupos registrados en la base de datos.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Nombre del Titular</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-bounding-box"></i></span>
+                    <input type="text" name="nombre" class="form-control" 
+                           value="{% if usuario_a_editar %}{{ usuario_a_editar.nombre }}{% endif %}" placeholder="Ej. Carlos Mendoza" required>
                 </div>
             </div>
 
-            <div class="workspace-column">
-                <div class="card-panel" style="margin-bottom: 30px;">
-                    <div class="panel-heading">✍️ Registrar Nuevo Usuario</div>
-                    <form action="/pageusuarios/nuevo/" method="POST">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" name="nombre" placeholder="Nombre Completo" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" name="usuario" placeholder="Nombre de Usuario (Login)" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="password" name="passwd" placeholder="Contraseña" required>
-                        </div>
-                        <div class="input-group">
-                            <input type="email" name="correo" placeholder="Correo Electrónico" required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <select name="grupo" required>
-                                <option value="" disabled selected>Seleccione el Grupo Asignado</option>
-                                {% for g in listadogrupos %}
-                                    <option value="{{ g.id }}">{{ g.nombre }}</option>
-                                {% empty %}
-                                    <option value="" disabled>⚠️ Registre un grupo primero</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <button type="submit" class="btn-submit">Guardar Usuario</button>
-                    </form>
-                </div>
-
-                <div class="card-panel">
-                    <h2 class="titulo-tabla">Tabla: Usuarios en PostgreSQL</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Usuario</th>
-                                    <th>Correo</th>
-                                    <th>Grupo Asignado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for u in consultagrupos %}
-                                <tr>
-                                    <td>{{ u.nombre }}</td>
-                                    <td>{{ u.usuario }}</td>
-                                    <td>{{ u.correo }}</td>
-                                    <td style="font-weight: bold; color: #2b6cb0;">{{ u.grupo.nombre }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 20px; color: #718096;">
-                                        ⚠️ No hay usuarios registrados en la base de datos.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Nombre de Usuario (Login)</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-badge-fill"></i></span>
+                    <input type="text" name="usuario" class="form-control" 
+                           value="{% if usuario_a_editar %}{{ usuario_a_editar.usuario }}{% endif %}" placeholder="Ej. carlos.glow" required>
                 </div>
             </div>
 
-        </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Contraseña de Acceso</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-key-fill"></i></span>
+                    <input type="password" name="passwd" id="passwordField" class="form-control" 
+                           value="{% if usuario_a_editar %}{{ usuario_a_editar.passwd }}{% endif %}" placeholder="••••••••" required>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn">
+                        <i class="bi bi-eye-fill" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Correo Electrónico</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-envelope-heart-fill"></i></span>
+                    <input type="email" name="correo" class="form-control" 
+                           value="{% if usuario_a_editar %}{{ usuario_a_editar.correo }}{% endif %}" placeholder="ejemplo@glow.com" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Grupo de Permisos (Rol)</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-shield-lock-fill"></i></span>
+                    <select name="grupo" class="form-select" required>
+                        <option value="" disabled {% if not usuario_a_editar %}selected{% endif %}>Selecciona un rol...</option>
+                        {% for g in grupos_disponibles %}
+                            <option value="{{ g.id }}" {% if usuario_a_editar.grupo.id == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold mb-1">Vincular a un Empleado</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-vcard"></i></span>
+                    <select name="empleado" class="form-select">
+                        <option value="" {% if not usuario_a_editar.empleado %}selected{% endif %}>Ninguno / Cuenta Especial</option>
+                        {% for emp in empleados_disponibles %}
+                            <option value="{{ emp.id }}" {% if usuario_a_editar.empleado.id == emp.id %}selected{% endif %}>
+                                {{ emp.nombre }} {{ emp.apellido }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
+                {% if usuario_a_editar %}<i class="bi bi-arrow-clockwise me-1"></i> Actualizar Usuario{% else %}<i class="bi bi-plus-circle me-1"></i> Guardar Cuenta{% endif %}
+            </button>
+            
+            {% if usuario_a_editar %}
+                <a href="{% url 'rutapageusuarios' %}" class="btn btn-outline-secondary w-100 btn-sm mt-2 fw-bold"><i class="bi bi-x-circle me-1"></i> Cancelar Edición</a>
+            {% endif %}
+        </form>
     </div>
 
-</body>
-</html>
+    <div class="col-md-7 ps-4">
+        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Cuentas de Usuario</h2>
+        
+        <form method="GET" action="{% url 'rutapageusuarios' %}" class="mb-3">
+            <div class="input-group shadow-sm">
+                <input type="text" name="buscar_usuario" class="form-control" placeholder="Buscar por Nickname..." value="{{ query }}">
+                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                {% if query %}
+                    <a href="{% url 'rutapageusuarios' %}" class="btn btn-outline-danger">Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="table-responsive shadow-sm rounded mb-3">
+            <table class="table table-hover align-middle" style="font-size: 0.85rem;">
+                <thead class="table-dark" style="background-color: #361827;">
+                    <tr>
+                        <th>Usuario (Login)</th>
+                        <th>Grupo / Rol</th>
+                        <th>Contacto Vinculado</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in page_obj %}
+                    <tr {% if not u.estatus %}style="background-color: #f8f9fa;"{% endif %}>
+                        <td>
+                            <strong>
+                                {% if not u.estatus %}<del class="text-muted">{% endif %}
+                                {{ u.usuario }}
+                                {% if not u.estatus %}</del>{% endif %}
+                            </strong><br>
+                            <small class="text-muted">{{ u.nombre }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary text-white">{{ u.grupo.nombre }}</span>
+                        </td>
+                        <td>
+                            <span class="small d-block text-truncate" style="max-width: 150px;"><i class="bi bi-envelope me-1"></i>{{ u.correo }}</span>
+                            {% if u.empleado %}
+                                <small class="text-success fw-bold" style="font-size: 0.75rem;"><i class="bi bi-check2-circle"></i> Emp: {{ u.empleado.nombre }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if u.estatus %}
+                                <span class="badge bg-success px-2 py-1" style="font-size: 0.7rem;">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger px-2 py-1" style="font-size: 0.7rem;">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="?editar={{ u.id }}{% if query %}&buscar_usuario={{ query }}{% endif %}" class="btn btn-sm btn-outline-primary px-2" style="font-size: 0.75rem;" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'cambiar_estatus_usuario' u.id %}" 
+                                   class="btn btn-sm {% if u.estatus %}btn-outline-danger{% else %}btn-outline-success{% endif %} px-2" 
+                                   style="font-size: 0.75rem;"
+                                   title="{% if u.estatus %}Desactivar Acceso{% else %}Activar Acceso{% endif %}"
+                                   onclick="return confirm('¿Seguro que deseas cambiar el estatus de este usuario?');">
+                                    {% if u.estatus %}<i class="bi bi-toggle-on"></i>{% else %}<i class="bi bi-toggle-off"></i>{% endif %}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-people d-block fs-2 text-secondary mb-2"></i>
+                            No hay cuentas de usuario configuradas con ese criterio.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_usuario={{ query }}{% endif %}">Anterior</a></li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if query %}&buscar_usuario={{ query }}{% endif %}">{{ num }}</a></li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_usuario={{ query }}{% endif %}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const passwordField = document.getElementById("passwordField");
+        const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+        const eyeIcon = document.getElementById("eyeIcon");
+
+        if (togglePasswordBtn && passwordField) {
+            togglePasswordBtn.addEventListener("click", function() {
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                    eyeIcon.classList.remove("bi-eye-fill");
+                    eyeIcon.classList.add("bi-eye-slash-fill");
+                } else {
+                    passwordField.type = "password";
+                    eyeIcon.classList.remove("bi-eye-slash-fill");
+                    eyeIcon.classList.add("bi-eye-fill");
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

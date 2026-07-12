@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventarios Generales | Glow & Beauty{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-5 border-end pe-4">
+        {% if inventario_a_editar %}
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-box-seam-fill me-2"></i>Editar Stock Local
+            </h2>
+            <form action="{% url 'actualizar_inventario' inventario_a_editar.id %}" method="POST">
+        {% else %}
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-plus-square-fill me-2"></i>Asignar a Inventario
+            </h2>
+            <form action="{% url 'nuevo_inventario' %}" method="POST">
+        {% endif %}
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Producto del Catálogo</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-flower1"></i></span>
+                    <select name="producto" class="form-select" required>
+                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona el producto...</option>
+                        {% for p in productos_disponibles %}
+                            <option value="{{ p.id }}" {% if inventario_a_editar.producto.id == p.id %}selected{% endif %}>{{ p.nombre }} (${{ p.precio }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Proveedor Autorizado</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-truck"></i></span>
+                    <select name="proveedor" class="form-select" required>
+                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona el distribuidor...</option>
+                        {% for prov in proveedores_disponibles %}
+                            <option value="{{ prov.id }}" {% if inventario_a_editar.proveedor.id == prov.id %}selected{% endif %}>{{ prov.nombre }} ({{ prov.categoria }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Sucursal de Destino</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-geo-alt-fill"></i></span>
+                    <select name="sucursal" class="form-select" required>
+                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona ubicación física...</option>
+                        {% for suc in sucursales_disponibles %}
+                            <option value="{{ suc.id }}" {% if inventario_a_editar.sucursal.id == suc.id %}selected{% endif %}>{{ suc.nombre }} - {{ suc.ciudad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold mb-1">Cantidad / Stock Disponible (Pzas)</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-calculator-fill"></i></span>
+                    <input type="number" name="stock_local" class="form-control" min="0" required
+                           value="{% if inventario_a_editar %}{{ inventario_a_editar.stock_local }}{% else %}0{% endif %}">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
+                {% if inventario_a_editar %}<i class="bi bi-arrow-clockwise me-1"></i> Actualizar Stock{% else %}<i class="bi bi-plus-circle me-1"></i> Registrar en Inventario{% endif %}
+            </button>
+            
+            {% if inventario_a_editar %}
+                <a href="{% url 'rutapageinventarios' %}" class="btn btn-outline-secondary w-100 btn-sm mt-2 fw-bold"><i class="bi bi-x-circle me-1"></i> Cancelar Modificación</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="col-md-7 ps-4">
+        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Control de Existencias</h2>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show p-2 small shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close p-2.5" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="GET" action="{% url 'rutapageinventarios' %}" class="mb-3">
+            <div class="input-group shadow-sm">
+                <input type="text" name="buscar_inventario" class="form-control" placeholder="Buscar existencias por producto..." value="{{ query }}">
+                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+                {% if query %}
+                    <a href="{% url 'rutapageinventarios' %}" class="btn btn-outline-danger">Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="table-responsive shadow-sm rounded mb-3">
+            <table class="table table-hover align-middle" style="font-size: 0.85rem;">
+                <thead class="table-dark" style="background-color: #361827;">
+                    <tr>
+                        <th>Producto / Info</th>
+                        <th>Ubicación</th>
+                        <th>Distribuidor</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td>
+                            <strong class="text-dark">{{ item.producto.nombre }}</strong><br>
+                            <small class="text-muted">Cat: {{ item.producto.categoria }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.sucursal.nombre }}</span>
+                        </td>
+                        <td>
+                            <span class="small text-secondary">{{ item.proveedor.nombre }}</span>
+                        </td>
+                        <td class="text-center">
+                            {% if item.stock_local > 10 %}
+                                <span class="badge bg-success rounded-pill px-3">{{ item.stock_local }} pzs</span>
+                            {% elif item.stock_local > 0 %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3">{{ item.stock_local }} pzs</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-3">Agotado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="?editar={{ item.id }}{% if query %}&buscar_inventario={{ query }}{% endif %}" class="btn btn-sm btn-outline-primary px-2" title="Editar Cantidades">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="{% url 'eliminar_inventario' item.id %}" class="btn btn-sm btn-outline-danger px-2" title="Eliminar Registro"
+                                   onclick="return confirm('¿Estás seguro de que deseas eliminar este registro de inventario? El stock registrado se perderá.');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-box-seam d-block fs-2 text-secondary mb-2"></i>
+                            No hay registros de inventario que coincidan.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_inventario={{ query }}{% endif %}">Anterior</a></li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if query %}&buscar_inventario={{ query }}{% endif %}">{{ num }}</a></li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_inventario={{ query }}{% endif %}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

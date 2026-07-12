@@ -1,8 +1,16 @@
 from django.urls import path
-from .views import listausuarios, createusuarios, creategrupos # <-- Añadimos creategrupos
+from . import views
 
 urlpatterns = [
-    path('', listausuarios),
-    path('nuevo/', createusuarios),
-    path('nuevogrupo/', creategrupos), # <-- Ruta para procesar el formulario de grupos
+    # Consultar y Listar
+    path('pageusuarios/', views.pageusuarios, name='rutapageusuarios'),
+    
+    # Crear
+    path('usuarios/nuevo/', views.nuevo_usuario, name='nuevo_usuario'),
+    
+    # Editar / Actualizar
+    path('usuarios/actualizar/<int:usuario_id>/', views.actualizar_usuario, name='actualizar_usuario'),
+    
+    # Eliminar / Cambiar Estatus (Borrado lógico)
+    path('usuarios/estatus/<int:usuario_id>/', views.cambiar_estatus_usuario, name='cambiar_estatus_usuario'),
 ]

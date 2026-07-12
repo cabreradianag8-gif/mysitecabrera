@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Grupos y Permisos | Glow & Beauty{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- COLUMNA IZQUIERDA: FORMULARIO INTELIGENTE (CREAR / EDITAR) -->
+    <div class="col-md-5 border-end pe-4">
+        {% if grupo_a_editar %}
+            <!-- Modo Editar Activado -->
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-pencil-square me-2"></i>Editar Grupo
+            </h2>
+            <form action="{% url 'actualizar_grupo' grupo_a_editar.id %}" method="POST" id="formGrupo">
+        {% else %}
+            <!-- Modo Crear por Defecto -->
+            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
+                <i class="bi bi-shield-lock-fill me-2"></i>Nuevo Grupo
+            </h2>
+            <form action="{% url 'nuevo_grupo' %}" method="POST" id="formGrupo">
+        {% endif %}
+            {% csrf_token %}
+            
+            <!-- Campo Nombre del Grupo -->
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Nombre del Grupo / Rol</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-tag-fill"></i></span>
+                    <input type="text" name="nombre" class="form-control" 
+                           value="{% if grupo_a_editar %}{{ grupo_a_editar.nombre }}{% endif %}" 
+                           placeholder="Ej. Estilista VIP, Administrador..." required>
+                </div>
+            </div>
+
+            <!-- Campo Descripción -->
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold mb-1">Descripción de Permisos</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-card-text"></i></span>
+                    <textarea name="descripcion" class="form-control" rows="4" 
+                              placeholder="Describe qué pantallas o módulos tiene permitido ver este grupo..." required>{% if grupo_a_editar %}{{ grupo_a_editar.descripcion }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Campo Fecha de Registro -->
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold mb-1">Fecha de Registro</label>
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-calendar-event"></i></span>
+                    <input type="date" name="fecha_creacion" class="form-control" 
+                           value="{% if grupo_a_editar %}{{ grupo_a_editar.fecha_creacion|date:'Y-m-d' }}{% else %}{{ fecha_hoy }}{% endif %}" required>
+                </div>
+            </div>
+            
+            <!-- Botón de Envío Dinámico -->
+            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
+                {% if grupo_a_editar %}
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Grupo de Seguridad
+                {% else %}
+                    <i class="bi bi-plus-circle me-1"></i> Guardar Grupo de Seguridad
+                {% endif %}
+            </button>
+            
+            <!-- Botón Cancelar en caso de estar editando -->
+            {% if grupo_a_editar %}
+                <a href="{% url 'rutapagegrupos' %}" class="btn btn-outline-secondary w-100 btn-sm mt-2 fw-bold">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar Edición
+                </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- COLUMNA DERECHA: LISTADO DE ROLES Y BUSCADOR -->
+    <div class="col-md-7 ps-4">
+        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Roles Configurados</h2>
+        
+        <!-- Buscador por Nombre de Grupo -->
+        <form method="GET" action="{% url 'rutapagegrupos' %}" class="mb-3">
+            <div class="input-group shadow-sm">
+                <input type="text" name="buscar_nombre" class="form-control" placeholder="Buscar grupo por nombre..." value="{{ query }}">
+                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Buscar</button>
+                {% if query %}
+                    <a href="{% url 'rutapagegrupos' %}" class="btn btn-outline-danger">Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Tabla del Historial de Grupos -->
+        <div class="table-responsive shadow-sm rounded mb-3">
+            <table class="table table-hover align-middle" style="font-size: 0.85rem;">
+                <thead class="table-dark" style="background-color: #361827;">
+                    <tr>
+                        <th style="width: 35%;">Grupo / Rol</th>
+                        <th style="width: 40%;">Descripción de Accesos</th>
+                        <th style="width: 15%;" class="text-center">Estado</th>
+                        <th style="width: 10%;" class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grp in page_obj %}
+                    <!-- Si el grupo está inactivo toma un fondo gris tenue -->
+                    <tr {% if not grp.estatus %}style="background-color: #f8f9fa;"{% endif %}>
+                        <td>
+                            <strong>
+                                <!-- Si está inactivo, el texto se muestra tachado -->
+                                {% if not grp.estatus %}<del class="text-muted">{% endif %}
+                                {{ grp.nombre }}
+                                {% if not grp.estatus %}</del>{% endif %}
+                            </strong><br>
+                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ grp.fecha_creacion|date:"d/m/Y" }}</small>
+                        </td>
+                        <td>
+                            <span class="text-dark d-block text-wrap" style="max-width: 260px;">
+                                {% if not grp.estatus %}<del class="text-muted">{% endif %}
+                                {{ grp.descripcion }}
+                                {% if not grp.estatus %}</del>{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if grp.estatus %}
+                                <span class="badge bg-success px-2 py-1" style="font-size: 0.7rem;">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger px-2 py-1" style="font-size: 0.7rem;">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <!-- Botón Editar -->
+                                <a href="?editar={{ grp.id }}{% if query %}&buscar_nombre={{ query }}{% endif %}" 
+                                   class="btn btn-sm btn-outline-primary px-2" 
+                                   style="font-size: 0.75rem;" 
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                
+                                <!-- Botón Cambiar Estatus (Activar / Desactivar) -->
+                                <a href="{% url 'cambiar_estatus_grupo' grp.id %}" 
+                                   class="btn btn-sm {% if grp.estatus %}btn-outline-danger{% else %}btn-outline-success{% endif %} px-2" 
+                                   style="font-size: 0.75rem;"
+                                   title="{% if grp.estatus %}Desactivar{% else %}Activar{% endif %}"
+                                   onclick="return confirm('¿Seguro que deseas cambiar el estado de este grupo?');">
+                                   {% if grp.estatus %}
+                                        <i class="bi bi-toggle-on" title="Desactivar"></i>
+                                   {% else %}
+                                        <i class="bi bi-toggle-off" title="Activar"></i>
+                                   {% endif %}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="bi bi-shield-slash d-block fs-2 text-secondary mb-2"></i>
+                            No hay grupos de permisos registrados con ese criterio.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Componente de Paginación Inteligente -->
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_nombre={{ query }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&buscar_nombre={{ query }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_nombre={{ query }}{% endif %}">Siguiente</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
