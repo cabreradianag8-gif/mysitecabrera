@@ -1,106 +1,117 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from django.core.paginator import Paginator
+from django.contrib import messages
+from django.db import models
+
 from .models import Inventario
 from productos.models import Producto
-from proveedores.models import Proveedores
 from sucursal.models import Sucursal
 
-# 1. CONSULTAR Y LISTAR
-def pageinventarios(request):
-    query = request.GET.get('buscar_inventario', '')
-    
-    # Filtrar por nombre de producto si existe búsqueda
-    if query:
-        lista_inventario = Inventario.objects.filter(producto__nombre__icontains=query).order_by('-id')
-    else:
-        lista_inventario = Inventario.objects.all().order_by('-id')
+def pageinventarios(request, pk_editar=None):
+    inventario_a_editar = None
+    if pk_editar:
+        inventario_a_editar = get_object_or_404(Inventario, pk=pk_editar)
 
-    # Paginación exigida de 5 en 5
-    paginator = Paginator(lista_inventario, 5)
+    query = request.GET.get('q', '')
+    sucursal_id = request.GET.get('sucursal', '')
+    
+    # Detectar si el usuario quiere ver la papelera (?ver=papelera)
+    ver_seccion = request.GET.get('ver', 'activos') 
+    
+    if ver_seccion == 'papelera':
+        registros = Inventario.objects.filter(estatus=False).order_by('-id')
+    else:
+        registros = Inventario.objects.filter(estatus=True).order_by('-id')
+    
+    # --- FILTROS Y BÚSQUEDA ---
+    if query:
+        registros = registros.filter(
+            producto__nombre__icontains=query
+        ) | registros.filter(
+            producto__categoria__icontains=query
+        )
+        
+    if sucursal_id:
+        registros = registros.filter(sucursal_id=sucursal_id)
+
+    # --- METRICAS PARA EL DASHBOARD ---
+    total_articulos = registros.count()
+    alertas_stock = registros.filter(cantidad__lte=models.F('stock_minimo')).count()
+
+    # --- PAGINACIÓN ---
+    paginator = Paginator(registros, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Capturar si se va a editar un registro
-    editar_id = request.GET.get('editar', None)
-    inventario_a_editar = None
-    if editar_id:
-        inventario_a_editar = get_object_or_404(Inventario, id=editar_id)
-
-    # Cargar dropdowns relacionales (filtrando solo los activos si tu sistema lo requiere)
-    productos_disponibles = Producto.objects.filter(estatus=True)
-    proveedores_disponibles = Proveedores.objects.filter(estatus=True)
-    sucursales_disponibles = Sucursal.objects.all() # O .filter(status=True) según tu modelo sucursal
+    productos_disponibles = Producto.objects.filter(estatus=True) 
+    sucursales_disponibles = Sucursal.objects.filter(status=True)
 
     context = {
-        'page_obj': page_obj,
+        'inventarios': page_obj,
         'query': query,
+        'sucursal_seleccionada': sucursal_id,
         'inventario_a_editar': inventario_a_editar,
         'productos_disponibles': productos_disponibles,
-        'proveedores_disponibles': proveedores_disponibles,
-        'sucursales_disponibles': sucursales_disponibles
+        'sucursales_disponibles': sucursales_disponibles,
+        'total_articulos': total_articulos,
+        'alertas_stock': alertas_stock,
+        'ver_seccion': ver_seccion
     }
     return render(request, 'inventarios/inventario.html', context)
 
-# 2. CREAR
+
 def nuevo_inventario(request):
     if request.method == 'POST':
         producto_id = request.POST.get('producto')
-        proveedor_id = request.POST.get('proveedor')
         sucursal_id = request.POST.get('sucursal')
-        stock_local = request.POST.get('stock_local', 0)
+        cantidad = request.POST.get('cantidad')
+        stock_minimo = request.POST.get('stock_minimo')
 
-        prod_obj = get_object_or_404(Producto, id=producto_id)
-        prov_obj = get_object_or_404(Proveedores, id=proveedor_id)
-        suc_obj = get_object_or_404(Sucursal, id=sucursal_id)
+        inv_existente = Inventario.objects.filter(producto_id=producto_id, sucursal_id=sucursal_id).first()
+        
+        if inv_existente:
+            if not inv_existente.estatus:
+                inv_existente.cantidad = cantidad
+                inv_existente.stock_minimo = stock_minimo
+                inv_existente.estatus = True
+                inv_existente.save()
+                messages.success(request, f"Se recuperó '{inv_existente.producto.nombre}' de la papelera con stock actualizado.")
+            else:
+                messages.error(request, "Este producto ya tiene existencias asignadas en esta sucursal.")
+        else:
+            Inventario.objects.create(
+                producto_id=producto_id,
+                sucursal_id=sucursal_id,
+                cantidad=cantidad,
+                stock_minimo=stock_minimo
+            )
+            messages.success(request, "Inventario asignado correctamente.")
+            
+    return redirect('rutapageinventarios')
 
-        # Validar el unique_together antes de insertar para evitar errores de caída del sistema
-        existe = Inventario.objects.filter(producto=prod_obj, proveedor=prov_obj, sucursal=suc_obj).exists()
-        if existe:
-            messages.error(request, f"Error: Ya existe un registro de inventario para {prod_obj.nombre} con este proveedor en esa sucursal.")
-            return redirect('rutapageinventarios')
 
-        Inventario.objects.create(
-            producto=prod_obj,
-            proveedor=prov_obj,
-            sucursal=suc_obj,
-            stock_local=int(stock_local)
-        )
-        messages.success(request, "¡Asignación de stock de inventario creada con éxito!")
-        return redirect('rutapageinventarios')
-
-# 3. ACTUALIZAR
-def actualizar_inventario(request, inventario_id):
+def actualizar_inventario(request, pk):
+    item = get_object_or_404(Inventario, pk=pk)
     if request.method == 'POST':
-        inv_inst = get_object_or_404(Inventario, id=inventario_id)
-        producto_id = request.POST.get('producto')
-        proveedor_id = request.POST.get('proveedor')
-        sucursal_id = request.POST.get('sucursal')
-        stock_local = request.POST.get('stock_local')
+        item.cantidad = request.POST.get('cantidad')
+        item.stock_minimo = request.POST.get('stock_minimo')
+        item.save()
+        messages.success(request, f"Existencias de '{item.producto.nombre}' actualizadas.")
+    return redirect('rutapageinventarios')
 
-        prod_obj = get_object_or_404(Producto, id=producto_id)
-        prov_obj = get_object_or_404(Proveedores, id=proveedor_id)
-        suc_obj = get_object_or_404(Sucursal, id=sucursal_id)
 
-        # Validar si cambiaron llaves y que no choquen con otro registro existente
-        if (inv_inst.producto != prod_obj or inv_inst.proveedor != prov_obj or inv_inst.sucursal != suc_obj):
-            if Inventario.objects.filter(producto=prod_obj, proveedor=prov_obj, sucursal=suc_obj).exists():
-                messages.error(request, "Error: No se pudo actualizar porque esa combinación ya existe.")
-                return redirect('rutapageinventarios')
+def eliminar_inventario(request, pk):
+    item = get_object_or_404(Inventario, pk=pk)
+    nombre_prod = item.producto.nombre
+    item.estatus = False
+    item.save()
+    messages.warning(request, f"'{nombre_prod}' fue enviado a la papelera de reciclaje.")
+    return redirect('rutapageinventarios')
 
-        inv_inst.producto = prod_obj
-        inv_inst.proveedor = prov_obj
-        inv_inst.sucursal = suc_obj
-        inv_inst.stock_local = int(stock_local)
-        inv_inst.save()
 
-        messages.success(request, "¡Registro de inventario actualizado correctamente!")
-        return redirect('rutapageinventarios')
-
-# 4. ELIMINAR (Para limpiar asignaciones erróneas)
-def eliminar_inventario(request, inventario_id):
-    inv_inst = get_object_or_404(Inventario, id=inventario_id)
-    nombre_prod = inv_inst.producto.nombre
-    inv_inst.delete()
-    messages.warning(request, f"Se ha removido el control de inventario para '{nombre_prod}'.")
+def restaurar_inventario(request, pk):
+    item = get_object_or_404(Inventario, pk=pk)
+    item.estatus = True
+    item.save()
+    messages.success(request, f"'{item.producto.nombre}' ha sido restaurado con éxito.")
     return redirect('rutapageinventarios')

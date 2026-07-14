@@ -1,12 +1,11 @@
 from django.db import models
 
 class Producto(models.Model):
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=150)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField()
-    descripcion = models.TextField()
+    descripcion = models.TextField(blank=True, null=True)
     categoria = models.CharField(max_length=100)
-    estatus = models.BooleanField(default=True)  
+    estatus = models.BooleanField(default=True) # Para el borrado lógico
 
     def __str__(self):
         return self.nombre

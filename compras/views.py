@@ -1,117 +1,116 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
-from django.utils import timezone
+from django.contrib import messages
 from django.db import transaction
+from datetime import datetime
+import random
+
 from .models import Compras, DetalleCompra
 from proveedores.models import Proveedores
-from productos.models import Producto
+from inventarios.models import Inventario
 
-def pagecompras_view(request, pk_editar=None):
-    compra_a_editar = None
-    if pk_editar:
-        compra_a_editar = get_object_or_404(Compras, pk=pk_editar)
-
-    lista_proveedores = Proveedores.objects.all().order_by('id')
-    lista_productos = Producto.objects.all().order_by('nombre')
-
-    ultima_compra = Compras.objects.all().order_by('id').last()
-    siguiente_id = (ultima_compra.id + 1) if ultima_compra else 1
-    proximo_folio = f"CMP-{siguiente_id:04d}"
-
+def pagecompras(request):
     query = request.GET.get('q', '')
-    if query:
-        consultacompras = Compras.objects.filter(folio__icontains=query).order_by('-id')
-    else:
-        # Usamos prefetch_related para obtener eficientemente los detalles y productos
-        consultacompras = Compras.objects.all().prefetch_related('detallecompra_set__producto').order_by('-id')
+    compras_lista = Compras.objects.all().order_by('-id')
     
-    paginator = Paginator(consultacompras, 5)
+    if query:
+        compras_lista = compras_lista.filter(folio__icontains=query)
+
+    paginator = Paginator(compras_lista, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
-        'consultacompras': page_obj,
+        'compras': page_obj,
         'query': query,
-        'compra_a_editar': compra_a_editar,
-        'proximo_folio': proximo_folio,
-        'fecha_actual': timezone.now().date(),
-        'lista_proveedores': lista_proveedores,
-        'lista_productos': lista_productos,
+        'inventarios_disponibles': Inventario.objects.all(),
+        'proveedores_disponibles': Proveedores.objects.filter(estatus=True),
     }
     return render(request, 'compras/compras.html', context)
 
 
-def nueva_compra(request):
+def registrar_compra(request):
     if request.method == 'POST':
-        with transaction.atomic():
-            # Obtener datos base
-            subtotal = float(request.POST.get('subtotal', '0'))
-            iva_calculado = subtotal * 0.16
-            total_calculado = subtotal + iva_calculado
-            
-            # Crear la cabecera de la compra
-            ultima_compra = Compras.objects.all().order_by('id').last()
-            siguiente_id = (ultima_compra.id + 1) if ultima_compra else 1
-            folio_automatico = f"CMP-{siguiente_id:04d}"
-            
-            compra = Compras.objects.create(
-                folio=folio_automatico,
-                fecha=timezone.now().date(),
-                subtotal=subtotal,
-                iva=iva_calculado,
-                total=total_calculado,
-                estatus='Procesada'
-            )
-            
-            # Asignar proveedores
-            compra.proveedor.set(request.POST.getlist('proveedor_ids'))
-            
-            # Recuperar arrays
-            producto_ids = request.POST.getlist('producto_ids')
-            costos = request.POST.getlist('costos_prod')
-            cantidades = request.POST.getlist('cantidades_prod')
-            
-            # VALIDACIÓN DE SEGURIDAD: Solo procesar si las listas tienen el mismo largo
-            if len(producto_ids) == len(costos) == len(cantidades):
-                for i in range(len(producto_ids)):
-                    prod_id = producto_ids[i]
-                    costo_un = float(costos[i])
-                    cant = int(cantidades[i])
+        proveedores_ids = request.POST.getlist('proveedores')
+        
+        # Listas dinámicas del desglose enviado desde la tabla de JS
+        inventarios_ids = request.POST.getlist('inventarios[]')
+        cantidades = request.POST.getlist('cantidades[]')
+        costos = request.POST.getlist('costos[]')
+
+        if not inventarios_ids:
+            messages.error(request, "Debes añadir al menos un artículo al desglose de la compra.")
+            return redirect('rutapagecompras')
+
+        try:
+            with transaction.atomic():
+                # 1. 🤖 ASIGNACIÓN AUTOMÁTICA DE FECHA Y FOLIO UNICO
+                ahora = datetime.now()
+                fecha_automatica = ahora.date()
+                # Genera un folio único automático, ej: COMP-20260713-4829
+                folio_automatico = f"COMP-{ahora.strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
+                
+                # 2. 🧮 CÁLCULO AUTOMÁTICO DE VALORES MONETARIOS
+                calculo_subtotal = 0.0
+                for cant, costo in zip(cantidades, costos):
+                    calculo_subtotal += int(cant) * float(costo)
+                
+                calculo_iva = calculo_subtotal * 0.16  # IVA estándar del 16%
+                calculo_total = calculo_subtotal + calculo_iva
+
+                # 3. GUARDAR EN LA BASE DE DATOS (Mismos campos del modelo)
+                nueva_compra = Compras.objects.create(
+                    folio=folio_automatico,
+                    fecha=fecha_automatica,
+                    subtotal=calculo_subtotal,
+                    iva=calculo_iva,
+                    total=calculo_total,
+                    estatus='Procesada'
+                )
+                
+                # Asociar Proveedores ManyToMany
+                nueva_compra.proveedor.set(proveedores_ids)
+                
+                # 4. Registrar detalles y actualizar stock en Inventarios
+                for inv_id, cant, costo in zip(inventarios_ids, cantidades, costos):
+                    inventario_obj = Inventario.objects.get(id=inv_id)
+                    cantidad_unidades = int(cant)
                     
-                    prod_instancia = get_object_or_404(Producto, id=prod_id)
-                    
-                    # Guardar detalle
                     DetalleCompra.objects.create(
-                        compra=compra,
-                        producto=prod_instancia,
-                        cantidad=cant,
-                        costo_compra=costo_un
+                        compra=nueva_compra,
+                        producto=inventario_obj.producto,
+                        inventario=inventario_obj,
+                        cantidad=cantidad_unidades,
+                        costo_compra=float(costo)
                     )
                     
-                    # Afectar stock
-                    prod_instancia.stock += cant
-                    prod_instancia.save()
-            else:
-                # Si falló la sincronización, cancelamos la creación para evitar basura
-                compra.delete()
+                    # Sumar las unidades directamente al inventario de esa sucursal
+                    inventario_obj.cantidad += cantidad_unidades
+                    inventario_obj.save()
+                    
+                messages.success(request, f"Compra {folio_automatico} procesada automáticamente. ¡Inventarios actualizados!")
                 
+        except Exception as e:
+            messages.error(request, f"Error al procesar la operación automatizada: {str(e)}")
+            
     return redirect('rutapagecompras')
 
 
 def cancelar_compra(request, pk):
-    # Lógica de protección financiera e inventario
     compra = get_object_or_404(Compras, pk=pk)
-    
     if compra.estatus == 'Procesada':
-        with transaction.atomic():
-            compra.estatus = 'Cancelada'
-            compra.save()
-            
-            # Revertir el Stock: Restar las unidades agregadas previamente
-            detalles = DetalleCompra.objects.filter(compra=compra)
-            for item in detalles:
-                producto = item.producto
-                producto.stock -= item.cantidad
-                producto.save()
+        try:
+            with transaction.atomic():
+                detalles = DetalleCompra.objects.filter(compra=compra)
+                for detalle in detalles:
+                    detalle.inventario.cantidad -= detalle.cantidad
+                    detalle.inventario.save()
                 
+                compra.estatus = 'Cancelada'
+                compra.save()
+                messages.warning(request, f"Compra {compra.folio} cancelada. El stock fue retirado de los almacenes.")
+        except Exception as e:
+            messages.error(request, f"No se pudo revertir el stock: {str(e)}")
+    else:
+        messages.error(request, "Esta compra ya se encuentra cancelada.")
     return redirect('rutapagecompras')

@@ -4,288 +4,249 @@
 
 {% block content %}
 <div class="row">
-    <!-- ====================================================================== -->
-    <!-- COLUMNA IZQUIERDA: FORMULARIO FINANCIERO INTERACTIVO                   -->
-    <!-- ====================================================================== -->
+    <!-- FORMULARIO DE REGISTRO AUTOMATIZADO (IZQUIERDA) -->
     <div class="col-md-5 border-end pe-4">
         <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
-            <i class="bi bi-cart-plus me-2"></i>Nueva Compra
+            <i class="bi bi-bag-plus-fill me-2"></i>Nueva Compra
         </h2>
-        
-        <form action="{% url 'nueva_compra' %}" method="POST" id="formCompra">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show small py-2" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'registrar_compra' %}" method="POST" class="small">
             {% csrf_token %}
             
-            <!-- TARJETA DE TIEMPO REAL: FOLIO Y FECHA -->
-            <div class="card mb-4 shadow-sm border-0 text-white" style="background-color: #2d1622;">
-                <div class="card-body p-3" style="font-size: 0.85rem;">
-                    <div class="row text-center">
-                        <div class="col-6 border-end border-secondary">
-                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Folio Sistema</span>
-                            <span class="fw-bold fs-6 text-warning">{{ proximo_folio }}</span>
-                        </div>
-                        <div class="col-6">
-                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Fecha Operación</span>
-                            <span class="fw-bold fs-6">{{ fecha_actual|date:"d/m/Y" }}</span>
-                        </div>
+            <!-- DATOS DE CONTROL AUTOMÁTICOS VISUALES -->
+            <div class="row mb-3 g-2">
+                <div class="col-6">
+                    <label class="form-label fw-bold text-muted small">Folio de Operación</label>
+                    <input type="text" class="form-control form-control-sm bg-light text-secondary border-dashed" value="[ Autogenerado ]" readonly style="border-style: dashed;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold text-muted small">Fecha de Registro</label>
+                    <input type="text" class="form-control form-control-sm bg-light text-secondary border-dashed" value="[ Hoy ]" readonly style="border-style: dashed;">
+                </div>
+            </div>
+
+            <!-- SELECCIÓN DE PROVEEDORES -->
+            <div class="mb-3">
+                <label class="form-label fw-bold text-muted">Proveedor Destinatario (Ctrl + Clic para varios)</label>
+                <select name="proveedores" class="form-select form-select-sm" multiple required style="height: 75px;">
+                    {% for prov in proveedores_disponibles %}
+                        <option value="{{ prov.id }}">{{ prov.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <hr class="text-muted my-3">
+            <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-list-stars me-1"></i>Desglose de Líneas de Stock</h6>
+            
+            <!-- ENTRADA DINÁMICA DE ARTÍCULOS -->
+            <div class="row g-2 mb-3">
+                <div class="col-12">
+                    <select id="select-inventario" class="form-select form-select-sm">
+                        <option value="" selected disabled>-- Selecciona Artículo y Sucursal Destino --</option>
+                        {% for inv in inventarios_disponibles %}
+                            <option value="{{ inv.id }}" data-info="{{ inv.producto.nombre }} [En {{ inv.sucursal.nombre }}]">
+                                {{ inv.producto.nombre }} ➔ Destino: {{ inv.sucursal.nombre }} (Actual: {{ inv.cantidad }} pzas)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-5">
+                    <input type="number" id="input-cantidad" min="1" class="form-control form-control-sm" placeholder="Unidades">
+                </div>
+                <div class="col-5">
+                    <input type="number" id="input-costo" step="0.01" class="form-control form-control-sm" placeholder="Costo ($)">
+                </div>
+                <div class="col-2">
+                    <button type="button" id="btn-agregar-item" class="btn btn-dark btn-sm w-100"><i class="bi bi-plus-lg"></i></button>
+                </div>
+            </div>
+
+            <!-- TABLA DINÁMICA INTERMEDIA -->
+            <div class="table-responsive border rounded mb-3" style="max-height: 180px;">
+                <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;" id="tabla-detalles">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-2">Producto [Sucursal]</th>
+                            <th>Cant</th>
+                            <th>Costo Unit.</th>
+                            <th class="text-center">Quitar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Inyección con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- VALORES ECONÓMICOS EN TIEMPO REAL -->
+            <div class="row mb-4 g-2 text-center text-muted extra-small">
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded border border-dashed">
+                        <span class="text-secondary d-block mb-1">Subtotal</span>
+                        <span class="fw-bold text-dark fs-6" id="txt-subtotal">$0.00</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded border border-dashed">
+                        <span class="text-secondary d-block mb-1">IVA (16%)</span>
+                        <span class="fw-bold text-dark fs-6" id="txt-iva">$0.00</span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 rounded border border-dashed style-total-box" style="background-color: #fdf5f7; border-color: #e5a9a9 !important;">
+                        <span class="text-secondary d-block mb-1 fw-bold">Total Compra</span>
+                        <span class="fw-bold text-success fs-6" id="txt-total">$0.00</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- PROVEEDORES -->
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-0">Proveedor Emisor</label>
-                <select name="proveedor_ids" class="form-select text-dark shadow-sm" multiple style="height: 80px;" required>
-                    {% for prov in lista_proveedores %}
-                        <option value="{{ prov.id }}">🏢 {{ prov.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
 
-            <!-- SELECTOR DE CATALOGO (SIN NAME PARA NO REPETIR EN BACKEND) -->
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-0">Seleccionar Insumos del Catálogo</label>
-                <span class="text-muted d-block mb-1" style="font-size: 0.68rem;">Mantén presionado Ctrl / Cmd para marcar múltiples artículos</span>
-                <select id="selectProductos" class="form-select text-dark shadow-sm" multiple style="height: 120px;">
-                    {% for prod in lista_productos %}
-                        <option value="{{ prod.id }}" data-nombre="{{ prod.nombre }}" data-precio="{{ prod.precio }}">
-                            📦 {{ prod.nombre }} (P. Venta: ${{ prod.precio }})
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- TABLA DINÁMICA DE COSTOS INTERNOS DE COMPRA -->
-            <div class="mb-4">
-                <label class="form-label text-muted small fw-bold mb-1">Costos de Proveedor y Unidades a Sumar a Stock</label>
-                <div class="table-responsive border rounded bg-white p-2" style="max-height: 220px;">
-                    <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;" id="tablaDesglose">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nombre Artículo</th>
-                                <th style="width: 115px;">Costo Compra ($)</th>
-                                <th style="width: 85px;">Cant.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="row-vacio">
-                                <td colspan="3" class="text-center text-muted py-3">Ningún producto seleccionado en el listado superior.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- CARGA FINANCIERA OCULTA POSTEADA HACIA DJANGO -->
-            <input type="hidden" name="subtotal" id="inputSubtotal" value="0">
-
-            <!-- CONTENEDOR DE DESGLOSE DE BALANCE -->
-            <div class="p-3 rounded mb-4 shadow-sm" style="background-color: #fff0f3; border: 1px solid #e5a9a9;">
-                <div class="d-flex justify-content-between text-secondary small mb-1">
-                    <span>Subtotal Adquisición:</span>
-                    <span class="fw-bold text-dark" id="txtSubtotal">$0.00</span>
-                </div>
-                <div class="d-flex justify-content-between text-secondary small mb-2">
-                    <span>IVA Trasladado (16%):</span>
-                    <span id="txtIva">+$0.00</span>
-                </div>
-                <hr class="my-2" style="border-color: #e5a9a9;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold text-dark">Total Neto Facturado:</span>
-                    <span class="fs-5 fw-bold text-danger" id="txtTotal">$0.00</span>
-                </div>
-            </div>
-            
-            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm" style="background-color: #361827;">
-                <i class="bi bi-box-seam me-1"></i> Procesar Entrada e Incrementar Stock
+            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #361827;">
+                <i class="bi bi-magic me-1"></i> Generar y Surtir Almacenes
             </button>
         </form>
     </div>
 
-    <!-- ====================================================================== -->
-    <!-- COLUMNA DERECHA: HISTORIAL COMPLETO DE MOVIMIENTOS                     -->
-    <!-- ====================================================================== -->
+    <!-- TABLA DE HISTORIAL / BITÁCORA (DERECHA) -->
     <div class="col-md-7 ps-4">
-        
-        <!-- BUSCADOR DINÁMICO POR FOLIOS -->
         <div class="mb-4">
             <form method="GET" action="{% url 'rutapagecompras' %}" class="d-flex gap-2">
-                <input type="text" name="q" class="form-control" placeholder="Buscar orden por folio exacto..." value="{{ query }}">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por Folio..." value="{{ query }}">
                 <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-                {% if query %}
-                    <a href="{% url 'rutapagecompras' %}" class="btn btn-light border"><i class="bi bi-x-circle"></i></a>
-                {% endif %}
             </form>
         </div>
 
-        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Historial General de Egresos</h2>
-        
+        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Historial de Compras</h2>
+
         <div class="table-responsive shadow-sm rounded">
-            <table class="table table-hover align-middle" style="font-size: 0.82rem;">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                 <thead class="table-light">
                     <tr>
-                        <th>Folio / Registro</th>
-                        <th>Consorcio Proveedor</th>
-                        <th>Artículos, Cantidad y Costo Real</th>
-                        <th>Montos e IVA</th>
-                        <th>Acción</th>
+                        <th class="ps-3">Folio / Fecha</th>
+                        <th>Proveedores</th>
+                        <th>Montos</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for comp in consultacompras %}
-                    <tr {% if comp.estatus == 'Cancelada' %}style="background-color: #f8f9fa;"{% endif %}>
-                        <td>
-                            {% if comp.estatus == 'Cancelada' %}
-                                <del class="fw-bold text-muted"><i class="bi bi-x-circle-fill me-1"></i>{{ comp.folio }}</del>
-                            {% else %}
-                                <strong class="text-dark"><i class="bi bi-receipt me-1"></i>{{ comp.folio }}</strong>
-                            {% endif %}
-                            <br>
-                            <small class="text-muted d-block mt-1">{{ comp.fecha|date:"d/m/Y" }}</small>
-                            
-                            <!-- ESTATUS INSIGNIA -->
-                            {% if comp.estatus == 'Procesada' %}
-                                <span class="badge bg-success p-1 mt-1" style="font-size: 0.65rem;">Procesada</span>
-                            {% else %}
-                                <span class="badge bg-danger p-1 mt-1" style="font-size: 0.65rem;">Cancelada</span>
-                            {% endif %}
+                    {% for c in compras %}
+                    <tr>
+                        <td class="ps-3">
+                            <strong class="text-dark">#{{ c.folio }}</strong><br>
+                            <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ c.fecha|date:"d/m/Y" }}</span>
                         </td>
                         <td>
-                            {% for prov in comp.proveedor.all %}
-                                <span class="badge bg-dark-subtle text-dark border mb-1 d-inline-block" style="font-size: 0.7rem;">🏢 {{ prov.nombre }}</span>
-                            {% empty %}
-                                <span class="text-muted small italic">S/P</span>
+                            {% for prov in c.proveedor.all %}
+                                <span class="badge bg-light text-dark border mb-1">{{ prov.nombre }}</span>{% if not forloop.last %}<br>{% endif %}
                             {% endfor %}
                         </td>
                         <td>
-                            <div class="p-2 rounded bg-light border">
-                                {% for item in comp.detallecompra_set.all %}
-                                    <div class="mb-1 text-dark" style="font-size: 0.78rem; line-height: 1.2;">
-                                        • {% if comp.estatus == 'Cancelada' %}<del>{% endif %}{{ item.producto.nombre }}{% if comp.estatus == 'Cancelada' %}</del>{% endif %} 
-                                        <span class="text-purple fw-bold">({{ item.cantidad }} pzs)</span> 
-                                        <span class="text-muted">c/u: ${{ item.costo_compra }}</span>
-                                    </div>
-                                {% empty %}
-                                    <span class="text-muted small italic">Sin artículos</span>
-                                {% endfor %}
-                            </div>
+                            <span class="text-muted extra-small">Sub: ${{ c.subtotal|floatformat:2 }}</span><br>
+                            <strong class="text-success">Total: ${{ c.total|floatformat:2 }}</strong>
                         </td>
                         <td>
-                            <small class="text-muted d-block">Sub: ${{ comp.subtotal }}</small>
-                            <small class="text-muted d-block">Total: <strong class="text-danger">${{ comp.total }}</strong></small>
+                            {% if c.estatus == 'Procesada' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Procesada</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Cancelada</span>
+                            {% endif %}
                         </td>
-                        <td>
-                            {% if comp.estatus == 'Procesada' %}
-                                <a href="{% url 'cancelar_compra' comp.id %}" class="btn btn-sm btn-outline-danger fw-bold" 
-                                   onclick="return confirm('¿Seguro que deseas cancelar esta compra? Se restarán las piezas del stock actual automáticamente.');" style="font-size: 0.7rem; padding: 3px 6px;">
-                                    <i class="bi bi-trash3"></i> Cancelar
+                        <td class="text-center">
+                            {% if c.estatus == 'Procesada' %}
+                                <a href="{% url 'cancelar_compra' c.id %}" class="btn btn-sm btn-outline-danger border-0" title="Cancelar Compra" onclick="return confirm('¿Seguro que deseas cancelar la compra? El stock ingresado se restará de los inventarios.');">
+                                    <i class="bi bi-x-circle-fill fs-5"></i>
                                 </a>
                             {% else %}
-                                <span class="text-muted small italic">Revertido</span>
+                                <span class="text-muted small text-decoration-line-through">Revertida</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="bi bi-folder-x fs-4 d-block mb-1"></i> No se registran compras generadas en el sistema.
-                        </td>
+                        <td colspan="5" class="text-center text-muted py-4">No hay compras registradas en la bitácora.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
-        <!-- PAGINACIÓN -->
-        {% if consultacompras.has_other_pages %}
-        <nav class="mt-3">
-            <ul class="pagination pagination-sm justify-content-center">
-                {% if consultacompras.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ consultacompras.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Anterior</a></li>
-                {% endif %}
-                {% for num in consultacompras.paginator.page_range %}
-                    <li class="page-item {% if consultacompras.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
-                    </li>
-                {% endfor %}
-                {% if consultacompras.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ consultacompras.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Siguiente</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-
     </div>
 </div>
 
-<!-- ====================================================================== -->
-<!-- PROCESADOR DE COSTOS EN VIVO Y CÁLCULOS MATEMÁTICOS JS                 -->
-<!-- ====================================================================== -->
+<!-- CAPTURA INTERMEDIA Y OPERACIONES EN VIVO CON JAVASCRIPT -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const selectProductos = document.getElementById("selectProductos");
-    const tablaDesglose = document.getElementById("tablaDesglose").getElementsByTagName('tbody')[0];
+// Función para recalcular los montos visibles dinámicamente
+function calcularMontosEnPantalla() {
+    let subtotal = 0;
     
-    selectProductos.addEventListener("change", function() {
-        tablaDesglose.innerHTML = "";
-        const opcionesSeleccionadas = Array.from(selectProductos.selectedOptions);
-        
-        if(opcionesSeleccionadas.length === 0) {
-            tablaDesglose.innerHTML = `<tr id="row-vacio"><td colspan="3" class="text-center text-muted py-3">Ningún producto seleccionado en el listado superior.</td></tr>`;
-            calcularTotales();
-            return;
-        }
-        
-        opcionesSeleccionadas.forEach(opcion => {
-            const id = opcion.value;
-            const nombre = opcion.getAttribute("data-nombre");
-            const precioPublico = parseFloat(opcion.getAttribute("data-precio"));
-            
-            // Costo sugerido base del proveedor (30% menos)
-            const costoSugerido = (precioPublico * 0.7).toFixed(2);
-            
-            const fila = document.createElement("tr");
-            fila.innerHTML = `
-                <td>
-                    <strong>${nombre}</strong>
-                    <input type="hidden" name="producto_ids" value="${id}">
-                </td>
-                <td><input type="number" step="0.01" name="costos_prod" class="form-control form-control-sm input-costo fw-bold text-dark" value="${costoSugerido}" required style="padding: 2px 5px;"></td>
-                <td><input type="number" min="1" name="cantidades_prod" class="form-control form-control-sm input-cantidad fw-bold text-dark" value="1" required style="padding: 2px 5px;"></td>
-            `;
-            tablaDesglose.appendChild(fila);
-        });
-        
-        Array.from(tablaDesglose.querySelectorAll('.input-costo, .input-cantidad')).forEach(input => {
-            input.addEventListener('input', calcularTotales);
-        });
-        calcularTotales();
+    // Recorremos cada renglón activo de la tabla para sumar (Cantidad * Costo)
+    const filas = document.querySelectorAll('#tabla-detalles tbody tr');
+    filas.forEach(fila => {
+        const cantidad = parseFloat(fila.querySelector('input[name="cantidades[]"]').value) || 0;
+        const costo = parseFloat(fila.querySelector('input[name="costos[]"]').value) || 0;
+        subtotal += (cantidad * costo);
     });
-    
-    function calcularTotales() {
-        let subtotalAcumulado = 0;
-        const filas = tablaDesglose.querySelectorAll("tr");
-        
-        if(filas.length > 0 && !document.getElementById("row-vacio")) {
-            filas.forEach(fila => {
-                const costoInput = fila.querySelector(".input-costo");
-                const cantidadInput = fila.querySelector(".input-cantidad");
-                if (costoInput && cantidadInput) {
-                    const costo = parseFloat(costoInput.value) || 0;
-                    const cantidad = parseInt(cantidadInput.value) || 0;
-                    subtotalAcumulado += (costo * cantidad);
-                }
-            });
-        }
-        
-        const iva = subtotalAcumulado * 0.16;
-        const total = subtotalAcumulado + iva;
-        
-        document.getElementById("txtSubtotal").innerText = `$${subtotalAcumulado.toFixed(2)}`;
-        document.getElementById("txtIva").innerText = `+$${iva.toFixed(2)}`;
-        document.getElementById("txtTotal").innerText = `$${total.toFixed(2)}`;
-        
-        document.getElementById("inputSubtotal").value = subtotalAcumulado.toFixed(2);
+
+    const iva = subtotal * 0.16;
+    const total = subtotal + iva;
+
+    // Pintamos los resultados con formato de moneda en las tarjetas inferiores
+    document.getElementById('txt-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+    document.getElementById('txt-iva').innerText = `$${iva.toFixed(2)}`;
+    document.getElementById('txt-total').innerText = `$${total.toFixed(2)}`;
+}
+
+document.getElementById('btn-agregar-item').addEventListener('click', function() {
+    const select = document.getElementById('select-inventario');
+    const inputCant = document.getElementById('input-cantidad');
+    const inputCosto = document.getElementById('input-costo');
+
+    const invId = select.value;
+    const invInfo = select.options[select.selectedIndex]?.getAttribute('data-info');
+    const cantidad = inputCant.value;
+    const costo = inputCosto.value;
+
+    if (!invId || cantidad <= 0 || costo <= 0) {
+        alert("Por favor, selecciona un artículo válido, ingresa la cantidad y su costo.");
+        return;
     }
+
+    const tbody = document.querySelector('#tabla-detalles tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="ps-2">${invInfo}<input type="hidden" name="inventarios[]" value="${invId}"></td>
+        <td><strong>${cantidad}</strong><input type="hidden" name="cantidades[]" value="${cantidad}"></td>
+        <td>$${parseFloat(costo).toFixed(2)}<input type="hidden" name="costos[]" value="${costo}"></td>
+        <td class="text-center">
+            <button type="button" class="btn btn-sm text-danger border-0 btn-quitar-item">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </td>
+    `;
+    
+    // Manejador del botón eliminar de esta fila específica
+    row.querySelector('.btn-quitar-item').addEventListener('click', function() {
+        row.remove();
+        calcularMontosEnPantalla(); // Recalcula al quitar un elemento
+    });
+
+    tbody.appendChild(row);
+
+    // Ejecutamos cálculo dinámico tras añadir la línea
+    calcularMontosEnPantalla();
+
+    // Limpieza de campos rápida para el siguiente renglón
+    select.value = "";
+    inputCant.value = "";
+    inputCosto.value = "";
 });
 </script>
 {% endblock %}

@@ -109,13 +109,20 @@
             padding: 40px;
         }
 
-        .profile-tag {
+        .profile-tag-btn {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(229, 169, 169, 0.3);
             padding: 6px 16px;
             border-radius: 50px;
+            transition: all 0.3s ease;
+            text-align: left;
         }
-        /* --- ESTILOS PARA LAS PAGINACIONES DEL CRUD --- */
+
+        .profile-tag-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--rose-gold);
+        }
+        
         .pagination .page-link {
             color: var(--velvet-med) !important;
             border-color: rgba(229, 169, 169, 0.3) !important;
@@ -134,7 +141,6 @@
             color: #7c054c !important;
         }
 
-        /* --- DETALLE PARA REGISTROS TACHADOS (INACTIVOS) --- */
         del {
             color: #a04f74 !important;
             text-decoration-color: #e5a9a9 !important;
@@ -158,6 +164,8 @@
             <div class="collapse navbar-collapse" id="mainMenu">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     
+                    <!-- 1. ÁREA COMERCIAL (Visible para Cajeras y Administradores) -->
+                    {% if es_cajera or es_admin %}
                     <li class="nav-item dropdown mx-1">
                         <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropVentas" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-bag-heart me-1"></i> Área Comercial
@@ -167,7 +175,10 @@
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageventas' %}"><i class="bi bi-currency-dollar"></i> Control de Ventas</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
+                    <!-- 2. PRODUCTOS & STOCK (Visible para Almacenistas y Administradores) -->
+                    {% if es_almacenista or es_admin %}
                     <li class="nav-item dropdown mx-1">
                         <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropInventario" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-magic me-1"></i> Productos & Stock
@@ -179,7 +190,10 @@
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapageinventarios' %}"><i class="bi bi-box-seam"></i> Inventarios Generales</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
+                    <!-- 3. EQUIPO & NÓMINAS (Visible Estrictamente para el Administrador) -->
+                    {% if es_admin %}
                     <li class="nav-item dropdown mx-1">
                         <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropPersonal" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-workspace me-1"></i> Equipo & Sucursales
@@ -190,7 +204,10 @@
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagesucursal' %}"><i class="bi bi-geo-alt"></i> Sucursales</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
+                    <!-- 4. SEGURIDAD DEL SISTEMA (Visible Estrictamente para el Administrador) -->
+                    {% if es_admin %}
                     <li class="nav-item dropdown mx-1">
                         <a class="nav-link nav-link-premium dropdown-toggle" href="#" id="dropConfig" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-shield-lock me-1"></i> Sistema
@@ -200,17 +217,39 @@
                             <li><a class="dropdown-item dropdown-item-premium" href="{% url 'rutapagegrupos' %}"><i class="bi bi-shield-check"></i> Grupos y Permisos</a></li>
                         </ul>
                     </li>
+                    {% endif %}
 
                 </ul>
 
-                <div class="d-flex align-items-center profile-tag">
-                    <div class="text-end me-3">
-                        <p class="mb-0 fw-bold text-white small">Valeria Mendoza</p>
-                        <p class="mb-0 extra-small" style="font-size: 0.7rem; font-weight: 700; color: var(--rose-gold) !important;">BEAUTY MANAGER</p>
-                    </div>
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150" 
-                         alt="Avatar" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
+                <!-- MENÚ DESPLEGABLE DE CUENTA -->
+                {% if request.user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn d-flex align-items-center profile-tag-btn dropdown-toggle text-white" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="text-end me-3">
+                            <p class="mb-0 fw-bold text-white small">
+                                {% if perfil %}{{ perfil.nombre }}{% else %}{{ request.user.username }}{% endif %}
+                            </p>
+                            <p class="mb-0 extra-small" style="font-size: 0.7rem; font-weight: 700; color: var(--rose-gold) !important; text-transform: uppercase;">
+                                {% if perfil.grupo %}{{ perfil.grupo.nombre }}{% else %}Sesión Activa{% endif %}
+                            </p>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150" 
+                             alt="Avatar" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
+                    </button>
+                    
+                    <ul class="dropdown-menu dropdown-menu-premium dropdown-menu-end mt-2" aria-labelledby="userMenuDropdown">
+                        <li class="px-3 py-2 border-bottom mb-2">
+                            <span class="text-muted d-block small">Conectado como:</span>
+                            <strong class="text-dark small">{{ request.user.email }}</strong>
+                        </li>
+                        <li>
+                            <a class="dropdown-item dropdown-item-premium text-danger" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-left text-danger"></i> Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
                 </div>
+                {% endif %}
 
             </div>
         </div>

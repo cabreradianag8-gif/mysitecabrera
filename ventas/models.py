@@ -1,6 +1,7 @@
 from django.db import models
 from clientes.models import Cliente
 from productos.models import Producto
+from sucursal.models import Sucursal  # <-- IMPORTANTE: Importar tu app sucursal
 
 class Ventas(models.Model):
     ESTATUS_CHOICES = [
@@ -13,10 +14,10 @@ class Ventas(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Completada')
     
-    # Un cliente puede registrar múltiples ventas en el sistema
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='mis_ventas')
+    # Añadimos la sucursal obligatoria para el descuento de inventario regional
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name='ventas_sucursal', null=True, blank=True)
     
-    # Relación de Muchos a Muchos explícita usando la tabla intermedia DetalleVenta
     productos = models.ManyToManyField(Producto, through='DetalleVenta', related_name='ventas_asociadas')
 
     def __str__(self):

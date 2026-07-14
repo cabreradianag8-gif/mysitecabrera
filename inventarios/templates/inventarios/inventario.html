@@ -1,175 +1,241 @@
 {% extends 'base.html' %}
 
-{% block title %}Inventarios Generales | Glow & Beauty{% endblock %}
+{% block title %}Inventario General | Glow & Beauty{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-5 border-end pe-4">
-        {% if inventario_a_editar %}
-            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
-                <i class="bi bi-box-seam-fill me-2"></i>Editar Stock Local
-            </h2>
-            <form action="{% url 'actualizar_inventario' inventario_a_editar.id %}" method="POST">
-        {% else %}
-            <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
-                <i class="bi bi-plus-square-fill me-2"></i>Asignar a Inventario
-            </h2>
-            <form action="{% url 'nuevo_inventario' %}" method="POST">
-        {% endif %}
-            {% csrf_token %}
-            
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-1">Producto del Catálogo</label>
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-flower1"></i></span>
-                    <select name="producto" class="form-select" required>
-                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona el producto...</option>
-                        {% for p in productos_disponibles %}
-                            <option value="{{ p.id }}" {% if inventario_a_editar.producto.id == p.id %}selected{% endif %}>{{ p.nombre }} (${{ p.precio }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-1">Proveedor Autorizado</label>
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-truck"></i></span>
-                    <select name="proveedor" class="form-select" required>
-                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona el distribuidor...</option>
-                        {% for prov in proveedores_disponibles %}
-                            <option value="{{ prov.id }}" {% if inventario_a_editar.proveedor.id == prov.id %}selected{% endif %}>{{ prov.nombre }} ({{ prov.categoria }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-1">Sucursal de Destino</label>
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-geo-alt-fill"></i></span>
-                    <select name="sucursal" class="form-select" required>
-                        <option value="" disabled {% if not inventario_a_editar %}selected{% endif %}>Selecciona ubicación física...</option>
-                        {% for suc in sucursales_disponibles %}
-                            <option value="{{ suc.id }}" {% if inventario_a_editar.sucursal.id == suc.id %}selected{% endif %}>{{ suc.nombre }} - {{ suc.ciudad }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label text-muted small fw-bold mb-1">Cantidad / Stock Disponible (Pzas)</label>
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-calculator-fill"></i></span>
-                    <input type="number" name="stock_local" class="form-control" min="0" required
-                           value="{% if inventario_a_editar %}{{ inventario_a_editar.stock_local }}{% else %}0{% endif %}">
-                </div>
-            </div>
-            
-            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
-                {% if inventario_a_editar %}<i class="bi bi-arrow-clockwise me-1"></i> Actualizar Stock{% else %}<i class="bi bi-plus-circle me-1"></i> Registrar en Inventario{% endif %}
-            </button>
-            
-            {% if inventario_a_editar %}
-                <a href="{% url 'rutapageinventarios' %}" class="btn btn-outline-secondary w-100 btn-sm mt-2 fw-bold"><i class="bi bi-x-circle me-1"></i> Cancelar Modificación</a>
-            {% endif %}
-        </form>
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 style="font-family: 'Playfair Display', serif; color: #1e0b14;" class="fw-bold m-0">
+            <i class="bi bi-box-seam-fill me-2" style="color: #a64b6b;"></i>Control de Inventarios
+        </h2>
+        <p class="text-muted small m-0">Gestiona las existencias de productos de belleza en cada sucursal física.</p>
     </div>
-
-    <div class="col-md-7 ps-4">
-        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Control de Existencias</h2>
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show p-2 small shadow-sm" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close p-2.5" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <form method="GET" action="{% url 'rutapageinventarios' %}" class="mb-3">
-            <div class="input-group shadow-sm">
-                <input type="text" name="buscar_inventario" class="form-control" placeholder="Buscar existencias por producto..." value="{{ query }}">
-                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
-                {% if query %}
-                    <a href="{% url 'rutapageinventarios' %}" class="btn btn-outline-danger">Limpiar</a>
-                {% endif %}
-            </div>
-        </form>
-
-        <div class="table-responsive shadow-sm rounded mb-3">
-            <table class="table table-hover align-middle" style="font-size: 0.85rem;">
-                <thead class="table-dark" style="background-color: #361827;">
-                    <tr>
-                        <th>Producto / Info</th>
-                        <th>Ubicación</th>
-                        <th>Distribuidor</th>
-                        <th class="text-center">Stock</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in page_obj %}
-                    <tr>
-                        <td>
-                            <strong class="text-dark">{{ item.producto.nombre }}</strong><br>
-                            <small class="text-muted">Cat: {{ item.producto.categoria }}</small>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.sucursal.nombre }}</span>
-                        </td>
-                        <td>
-                            <span class="small text-secondary">{{ item.proveedor.nombre }}</span>
-                        </td>
-                        <td class="text-center">
-                            {% if item.stock_local > 10 %}
-                                <span class="badge bg-success rounded-pill px-3">{{ item.stock_local }} pzs</span>
-                            {% elif item.stock_local > 0 %}
-                                <span class="badge bg-warning text-dark rounded-pill px-3">{{ item.stock_local }} pzs</span>
-                            {% else %}
-                                <span class="badge bg-danger rounded-pill px-3">Agotado</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a href="?editar={{ item.id }}{% if query %}&buscar_inventario={{ query }}{% endif %}" class="btn btn-sm btn-outline-primary px-2" title="Editar Cantidades">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <a href="{% url 'eliminar_inventario' item.id %}" class="btn btn-sm btn-outline-danger px-2" title="Eliminar Registro"
-                                   onclick="return confirm('¿Estás seguro de que deseas eliminar este registro de inventario? El stock registrado se perderá.');">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            <i class="bi bi-box-seam d-block fs-2 text-secondary mb-2"></i>
-                            No hay registros de inventario que coincidan.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    
+    <div class="col-md-6 d-flex justify-content-md-end gap-3 mt-3 mt-md-0">
+        <div class="p-2 px-3 bg-light rounded-3 text-center border">
+            <span class="text-muted extra-small d-block text-uppercase fw-bold">Artículos Listados</span>
+            <strong class="fs-5 text-dark">{{ total_articulos }}</strong>
         </div>
-
-        {% if page_obj.has_other_pages %}
-        <nav>
-            <ul class="pagination pagination-sm justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_inventario={{ query }}{% endif %}">Anterior</a></li>
-                {% endif %}
-                {% for num in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if query %}&buscar_inventario={{ query }}{% endif %}">{{ num }}</a></li>
-                {% endfor %}
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_inventario={{ query }}{% endif %}">Siguiente</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+        <div class="p-2 px-3 bg-danger-subtle rounded-3 text-center border border-danger-subtle">
+            <span class="text-danger extra-small d-block text-uppercase fw-bold">Stock Crítico</span>
+            <strong class="fs-5 text-danger">{{ alertas_stock }}</strong>
+        </div>
     </div>
 </div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show small" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="d-flex gap-2 mb-4">
+    <a href="{% url 'rutapageinventarios' %}?ver=activos" class="btn btn-sm px-3 rounded-pill fw-bold {% if ver_seccion != 'papelera' %}text-white{% else %}btn-outline-dark{% endif %}" style=<div class="{% if ver_seccion != 'papelera' %}fondo-especial{% endif %}">
+        <i class="bi bi-check-circle-fill me-1"></i> Inventario Activo
+    </a>
+    <a href="{% url 'rutapageinventarios' %}?ver=papelera" class="btn btn-sm px-3 rounded-pill fw-bold {% if ver_seccion == 'papelera' %}btn-danger text-white{% else %}btn-outline-danger{% endif %}">
+        <i class="bi bi-trash3-fill me-1"></i> Ver Papelera de Reciclaje
+    </a>
+</div>
+
+<div class="row g-4">
+    
+    <div class="col-lg-4 {% if ver_seccion == 'papelera' %}d-none{% endif %}">
+        <div class="p-4 rounded-4 border" style="background-color: #fdfaf9;">
+            {% if inventario_a_editar %}
+                <h5 class="fw-bold text-dark mb-3 small text-uppercase" style="letter-spacing: 0.5px;">Modificar Existencias</h5>
+                <form method="POST" action="{% url 'actualizar_inventario' inventario_a_editar.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Producto</label>
+                        <input type="text" class="form-control form-control-sm bg-white" readonly value="{{ inventario_a_editar.producto.nombre }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Sucursal asignada</label>
+                        <input type="text" class="form-control form-control-sm bg-white" readonly value="{{ inventario_a_editar.sucursal.nombre }}">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Cantidad Actual</label>
+                            <input type="number" name="cantidad" class="form-control form-control-sm" required value="{{ inventario_a_editar.cantidad }}" min="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Stock Mínimo</label>
+                            <input type="number" name="stock_minimo" class="form-control form-control-sm" required value="{{ inventario_a_editar.stock_minimo }}" min="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm text-white w-100 fw-bold py-2" style="background-color: #a64b6b;">
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'rutapageinventarios' %}" class="btn btn-sm btn-link link-secondary w-100 text-center mt-2 small">Cancelar Modificación</a>
+                </form>
+            {% else %}
+                <h5 class="fw-bold text-dark mb-3 small text-uppercase" style="letter-spacing: 0.5px;">Asignar Stock a Sucursal</h5>
+                <form method="POST" action="{% url 'nuevo_inventario' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Seleccionar Producto</label>
+                        <select name="producto" class="form-select form-select-sm" required>
+                            <option value="">-- Elige un Cosmético --</option>
+                            {% for p in productos_disponibles %}
+                                <option value="{{ p.id }}">{{ p.nombre }} ({{ p.categoria }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Sucursal de Destino</label>
+                        <select name="sucursal" class="form-select form-select-sm" required>
+                            <option value="">-- Elige Establecimiento --</option>
+                            {% for s in sucursales_disponibles %}
+                                <option value="{{ s.id }}">{{ s.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Cantidad Inicial</label>
+                            <input type="number" name="cantidad" class="form-control form-control-sm" required value="0" min="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold text-secondary">Stock Mínimo</label>
+                            <input type="number" name="stock_minimo" class="form-control form-control-sm" required value="5" min="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm text-white w-100 fw-bold py-2" style="background-color: #361827;">
+                        <i class="bi bi-plus-circle me-1"></i> Dar de Alta Stock
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="{% if ver_seccion == 'papelera' %}col-lg-12{% else %}col-lg-8{% endif %}">
+        
+        <form method="GET" action="{% url 'rutapageinventarios' %}" class="row g-2 mb-3 align-items-center">
+            <input type="hidden" name="ver" value="{{ ver_seccion }}">
+            <div class="col-md-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por cosmético..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="sucursal" class="form-select form-select-sm">
+                    <option value="">-- Todas las Sucursales --</option>
+                    {% for s in sucursales_disponibles %}
+                        <option value="{{ s.id }}" {% if sucursal_seleccionada == s.id|stringformat:"i" %}selected{% endif %}>{{ s.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-outline-dark w-100 fw-bold">Filtrar</button>
+            </div>
+        </form>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-secondary">
+                        <tr>
+                            <th class="ps-4">Cosmético / Producto</th>
+                            <th>Sucursal</th>
+                            <th class="text-center">Existencias</th>
+                            <th class="text-center">Mínimo Requerido</th>
+                            <th class="text-center">Estado de Stock</th>
+                            <th class="text-center" style="width: 140px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for item in inventarios %}
+                        <tr {% if item.cantidad <= item.stock_minimo and ver_seccion != 'papelera' %}class="table-warning-subtle"{% endif %}>
+                            <td class="ps-4">
+                                <strong class="text-dark d-block">{{ item.producto.nombre }}</strong>
+                                <span class="text-muted extra-small text-uppercase">{{ item.producto.categoria }}</span>
+                            </td>
+                            <td class="text-secondary fw-semibold">{{ item.sucursal.nombre }}</td>
+                            <td class="text-center fw-bold fs-6">
+                                <span class="{% if item.cantidad <= item.stock_minimo %}text-danger{% else %}text-dark{% endif %}">
+                                    {{ item.cantidad }} pzs
+                                </span>
+                            </td>
+                            <td class="text-center text-muted">{{ item.stock_minimo }} pzs</td>
+                            <td class="text-center">
+                                {% if item.cantidad <= item.stock_minimo %}
+                                    <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-pill extra-small fw-bold text-uppercase">Resurtir Ya</span>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill extra-small fw-bold text-uppercase">Suficiente</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if ver_seccion == 'papelera' %}
+                                    <a href="{% url 'restaurar_inventario' item.id %}" class="btn btn-sm btn-success px-3 py-0.5 extra-small fw-bold rounded-pill">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+                                    </a>
+                                {% else %}
+                                    <div class="btn-group">
+                                        <a href="{% url 'editar_inventario' item.id %}" class="btn btn-sm btn-outline-secondary py-0 extra-small fw-bold">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a href="{% url 'eliminar_inventario' item.id %}" class="btn btn-sm btn-outline-danger py-0 extra-small fw-bold" onclick="return confirm('¿Segura que deseas enviar este producto a la papelera?')">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2"></i> 
+                                {% if ver_seccion == 'papelera' %}
+                                    La papelera de reciclaje está vacía.
+                                {% else %}
+                                    No se encontraron registros de inventario.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if inventarios.has_other_pages %}
+            <div class="card-footer bg-white border-0 py-3 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-sm m-0">
+                        {% if inventarios.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ inventarios.previous_page_number }}&amp;ver={{ ver_seccion }}&amp;q={{ query }}&amp;sucursal={{ sucursal_seleccionada }}">Anterior</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in inventarios.paginator.page_range %}
+                            <li class="page-item {% if inventarios.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}&amp;ver={{ ver_seccion }}&amp;q={{ query }}&amp;sucursal={{ sucursal_seleccionada }}">{{ num }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if inventarios.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ inventarios.next_page_number }}&amp;ver={{ ver_seccion }}&amp;q={{ query }}&amp;sucursal={{ sucursal_seleccionada }}">Siguiente</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .extra-small {
+        font-size: 0.7rem;
+        letter-spacing: 0.3px;
+    }
+</style>
 {% endblock %}

@@ -1,312 +1,303 @@
 {% extends 'base.html' %}
 
-{% block title %}Punto de Venta | Glow & Beauty{% endblock %}
+{% block title %}Módulo de Ventas | Glow & Beauty{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-5 border-end pe-4">
-        <h2 class="fw-bold mb-4" style="color: #7c054c; font-family: 'Playfair Display', serif;">
-            <i class="bi bi-cash-coin me-2"></i>Nueva Venta
+<!-- ENCABEZADO DE LA SUCURSAL ACTIVA -->
+<div class="row align-items-center mb-4 pb-2 border-bottom">
+    <div class="col-md-8">
+        <h2 style="font-family: 'Playfair Display', serif; color: #1e0b14;" class="fw-bold m-0">
+            <i class="bi bi-cpu-fill me-2" style="color: #a64b6b;"></i>Punto de Venta General
         </h2>
-        
-        <form action="{% url 'nueva_venta' %}" method="POST" id="formVenta">
-            {% csrf_token %}
-            
-            <div class="card mb-4 shadow-sm border-0 text-white" style="background-color: #2d1622;">
-                <div class="card-body p-3" style="font-size: 0.85rem;">
-                    <div class="row text-center">
-                        <div class="col-6 border-end border-secondary">
-                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Folio Nota</span>
-                            <span class="fw-bold fs-6 text-warning">{{ proximo_folio }}</span>
-                        </div>
-                        <div class="col-6">
-                            <span class="text-muted d-block small text-uppercase fw-bold" style="font-size: 0.7rem;">Fecha Operación</span>
-                            <span class="fw-bold fs-6">Hoy</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-1">Buscar y Seleccionar Cliente</label>
-                <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-search"></i></span>
-                    <input type="text" id="buscadorCliente" class="form-control" placeholder="Escribe el nombre para filtrar..." list="datalistClientes" required>
-                    <datalist id="datalistClientes">
-                        {% for cli in lista_clientes %}
-                            <option data-id="{{ cli.id }}" value="👤 {{ cli.nombre }}"></option>
-                        {% endfor %}
-                    </datalist>
-                    <input type="hidden" name="cliente_id" id="cliente_id_hidden" required>
-                </div>
-                <div id="clienteFeedback" class="form-text text-success small d-none"><i class="bi bi-check-circle-fill"></i> Cliente validado correctamente.</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label text-muted small fw-bold mb-1">Seleccionar del Catálogo</label>
-                <select id="selectProductosVenta" class="form-select text-dark shadow-sm" multiple style="height: 120px;" required>
-                    {% for prod in lista_productos %}
-                        <option value="{{ prod.id }}" data-nombre="{{ prod.nombre }}" data-precio="{{ prod.precio }}" data-stock="{{ prod.stock }}">
-                            📦 {{ prod.nombre }} (Disponibles: {{ prod.stock }} | ${{ prod.precio }})
-                        </option>
-                    {% endfor %}
-                </select>
-                <div class="form-text text-muted extra-small" style="font-size: 0.75rem;">Mantén presionado Ctrl (o Cmd en Mac) para elegir múltiples artículos.</div>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label text-muted small fw-bold mb-1">Conceptos a Despachar</label>
-                <div class="border rounded bg-white shadow-sm overflow-hidden">
-                    <div class="table-responsive" style="max-height: 240px;">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;" id="tablaVenta">
-                            <thead class="table-dark" style="background-color: #361827;">
-                                <tr>
-                                    <th class="ps-3" style="width: 50%;">Artículo / Stock</th>
-                                    <th class="text-end" style="width: 25%;">P. Unitario</th>
-                                    <th class="text-center" style="width: 25%;">Cant.</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr id="row-vacio-venta">
-                                    <td colspan="3" class="text-center text-muted py-4">
-                                        <i class="bi bi-box-seam d-block fs-3 mb-2 text-secondary"></i>
-                                        Selecciona productos en el listado superior.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-3 rounded mb-4 shadow-sm" style="background-color: #fff0f3; border: 1px solid #e5a9a9;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold text-dark fs-6">Total a Liquidar:</span>
-                    <span class="fs-4 fw-bold text-success" id="txtTotalVenta">$0.00</span>
-                </div>
-            </div>
-            
-            <button type="submit" class="btn text-white w-100 fw-bold shadow-sm py-2" style="background-color: #2d1622;">
-                <i class="bi bi-check2-circle me-1"></i> Completar Venta y Descontar Stock
-            </button>
-        </form>
+        <p class="text-muted small mt-1 mb-0">
+            Operando desde: 
+            <span class="badge px-3 py-2 rounded-pill text-uppercase fw-bold" style="background-color: #fff0f3; color: #a64b6b; font-size: 0.75rem;">
+                <i class="bi bi-geo-alt-fill me-1"></i>{{ sucursal_actual.nombre }} ({{ sucursal_actual.city|default:"Matriz" }})
+            </span>
+            <a href="{% url 'cambiar_sucursal' %}" class="ms-2 btn btn-link link-secondary btn-sm p-0 fw-bold" style="text-decoration: none;">
+                <i class="bi bi-arrow-left-right"></i> Cambiar de Sucursal
+            </a>
+        </p>
     </div>
-
-    <div class="col-md-7 ps-4">
-        <h2 style="color: #7c054c; font-family: 'Playfair Display', serif;" class="fw-bold mb-3">Historial General de Ventas</h2>
-        
-        <form method="GET" action="{% url 'rutapageventas' %}" class="mb-3">
-            <div class="input-group shadow-sm">
-                <input type="text" name="buscar_folio" class="form-control" placeholder="Buscar orden por folio exacto..." value="{{ query }}">
-                <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Buscar</button>
-                {% if query %}
-                    <a href="{% url 'rutapageventas' %}" class="btn btn-outline-danger">Limpiar</a>
-                {% endif %}
-            </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <!-- BUSCADOR POR FOLIO -->
+        <form method="GET" action="{% url 'rutapageventas' %}" class="input-group input-group-sm">
+            <input type="text" name="buscar_folio" class="form-control" placeholder="Buscar folio exacto..." value="{{ query }}">
+            <button class="btn text-white fw-bold px-3" style="background-color: #361827;" type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+            {% if query %}
+                <a href="{% url 'rutapageventas' %}" class="btn btn-outline-secondary">Limpiar</a>
+            {% endif %}
         </form>
-
-        <div class="table-responsive shadow-sm rounded mb-3">
-            <table class="table table-hover align-middle" style="font-size: 0.82rem;">
-                <thead class="table-light">
-                    <tr>
-                        <th>Folio / Fecha</th>
-                        <th>Cliente</th>
-                        <th>Desglose de Artículos</th>
-                        <th>Total Cobrado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vta in page_obj %}
-                    <tr {% if vta.estatus == 'Cancelada' %}style="background-color: #f8f9fa;"{% endif %}>
-                        <td>
-                            <strong>{{ vta.folio }}</strong><br>
-                            <small class="text-muted">{{ vta.fecha|date:"d/m/Y" }}</small><br>
-                            {% if vta.estatus == 'Completada' %}
-                                <span class="badge bg-success p-1 mt-1" style="font-size: 0.65rem;">Completada</span>
-                            {% else %}
-                                <span class="badge bg-danger p-1 mt-1" style="font-size: 0.65rem;">Cancelada</span>
-                            {% endif %}
-                        </td>
-                        <td><span class="badge bg-light text-dark border">👤 {{ vta.cliente.nombre }}</span></td>
-                        <td>
-                            <div class="p-2 rounded bg-light border">
-                                {% for item in vta.detalleventa_set.all %}
-                                    <div class="mb-1 text-dark" style="font-size: 0.78rem;">
-                                        • {% if vta.estatus == 'Cancelada' %}<del>{% endif %}{{ item.producto.nombre }}{% if vta.estatus == 'Cancelada' %}</del>{% endif %}
-                                        <strong class="text-danger">({{ item.cantidad }} pzs)</strong>
-                                        <span class="text-muted"> c/u: ${{ item.producto.precio }}</span>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </td>
-                        <td><strong class="text-success fs-6">${{ vta.total }}</strong></td>
-                        <td>
-                            {% if vta.estatus == 'Completada' %}
-                                <a href="{% url 'cancelar_venta' vta.id %}" class="btn btn-sm btn-outline-danger fw-bold"
-                                   onclick="return confirm('¿Seguro de cancelar esta venta? Los artículos regresarán al inventario.');" style="font-size: 0.7rem;">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </a>
-                            {% else %}
-                                <span class="text-muted small italic">Revertido</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No hay registros de ventas que coincidan.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% if page_obj.has_other_pages %}
-        <nav>
-            <ul class="pagination pagination-sm justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Anterior</a></li>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}{% if query %}&buscar_folio={{ query }}{% endif %}">{{ num }}</a>
-                    </li>
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Siguiente</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
     </div>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const buscadorCliente = document.getElementById("buscadorCliente");
-    const clienteHidden = document.getElementById("cliente_id_hidden");
-    const clienteFeedback = document.getElementById("clienteFeedback");
-    const selectProductosVenta = document.getElementById("selectProductosVenta");
-    const tablaVenta = document.getElementById("tablaVenta").getElementsByTagName('tbody')[0];
-    
-    // --- LÓGICA DEL BUSCADOR DE CLIENTES ---
-    buscadorCliente.addEventListener("input", function() {
-        const valorInput = this.value;
-        const opciones = document.querySelectorAll("#datalistClientes option");
-        let encontrado = false;
-        
-        opciones.forEach(opcion => {
-            if (opcion.value === valorInput) {
-                clienteHidden.value = opcion.getAttribute("data-id");
-                encontrado = true;
-            }
-        });
-        
-        if (encontrado) {
-            buscadorCliente.classList.remove("is-invalid");
-            buscadorCliente.classList.add("is-valid");
-            clienteFeedback.classList.remove("d-none");
-        } else {
-            clienteHidden.value = ""; 
-            buscadorCliente.classList.remove("is-valid");
-            clienteFeedback.classList.add("d-none");
-        }
-    });
+<!-- ALERTAS DE ÉXITO O ERROR -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show small" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
 
-    // Validar en el envío del formulario que el cliente seleccionado sea real
-    document.getElementById("formVenta").addEventListener("submit", function(e) {
-        if (!clienteHidden.value) {
-            e.preventDefault();
-            buscadorCliente.classList.add("is-invalid");
-            buscadorCliente.focus();
-            alert("Por favor, selecciona un cliente válido de la lista desplegable.");
-        }
-    });
+<div class="row g-4">
+    <!-- COLUMNA IZQUIERDA: FORMULARIO NUEVA VENTA (EL CARRITO) -->
+    <div class="col-lg-4">
+        <div class="p-4 rounded-4 border position-sticky" style="background-color: #fdfaf9; top: 90px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0 text-dark small text-uppercase" style="letter-spacing: 1px;">Nueva Orden</h5>
+                <span class="badge bg-dark fw-bold px-2 py-1 small" id="lblFolio">{{ proximo_folio }}</span>
+            </div>
 
-    // --- LÓGICA DE LA TABLA DE CONCEPTOS ORDENADA ---
-    selectProductosVenta.addEventListener("change", function() {
-        tablaVenta.innerHTML = "";
-        const seleccionados = Array.from(selectProductosVenta.selectedOptions);
-        
-        if(seleccionados.length === 0) {
-            tablaVenta.innerHTML = `
-                <tr id="row-vacio-venta">
-                    <td colspan="3" class="text-center text-muted py-4">
-                        <i class="bi bi-box-seam d-block fs-3 mb-2 text-secondary"></i>
-                        Selecciona productos en el listado superior.
-                    </td>
-                </tr>`;
-            calcularTotalesVenta();
-            return;
-        }
-        
-        seleccionados.forEach(opcion => {
-            const id = opcion.value;
-            const nombre = opcion.getAttribute("data-nombre");
-            const precio = parseFloat(opcion.getAttribute("data-precio")) || 0;
-            const stockMax = parseInt(opcion.getAttribute("data-stock")) || 0;
+            <form method="POST" action="{% url 'nueva_venta' %}" id="formNuevaVenta">
+                {% csrf_token %}
+                
+                <!-- SELECCIÓN DE CLIENTE -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary small mb-1">Cliente Solicitante</label>
+                    <select name="cliente_id" class="form-select form-select-sm" required>
+                        <option value="">-- Seleccionar Cliente --</option>
+                        {% for cliente in lista_clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <hr class="my-3 opacity-50">
+
+                <!-- AGREGAR PRODUCTOS AL VUELO -->
+                <div class="mb-2">
+                    <label class="form-label fw-semibold text-secondary small mb-1">Cosméticos Disponibles (En esta Sucursal)</label>
+                    <select id="selector_producto" class="form-select form-select-sm">
+                        <option value="">-- Buscar Labial, Serum, Loción --</option>
+                        {% for inv in inventarios_sucursal %}
+                            <option value="{{ inv.producto.id }}" data-precio="{{ inv.producto.precio }}" data-stock="{{ inv.cantidad }}">
+                                {{ inv.producto.nombre }} [Disp: {{ inv.cantidad }} pzs] (${{ inv.producto.precio }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-8">
+                        <input type="number" id="cantidad_selector" class="form-control form-control-sm text-center" value="1" min="1" placeholder="Cant">
+                    </div>
+                    <div class="col-4">
+                        <button type="button" id="btn_cargar_item" class="btn btn-outline-dark btn-sm w-100 fw-bold">
+                            <i class="bi bi-bag-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TABLA INTERMEDIA DEL CARRITO DINÁMICO -->
+                <div class="table-responsive rounded-3 mb-3 border bg-white" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-sm table-hover align-middle mb-0" id="tabla_bolsa_compras">
+                        <thead class="table-light extra-small text-uppercase">
+                            <tr>
+                                <th class="ps-2">Item</th>
+                                <th class="text-center" style="width: 60px;">Cant</th>
+                                <th class="text-end pe-2">Subtotal</th>
+                                <th class="text-center" style="width: 40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 0.85rem;">
+                            <!-- Las filas se inyectan dinámicamente mediante JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TOTALES -->
+                <div class="p-3 rounded-3 mb-3 d-flex justify-content-between align-items-center" style="background-color: #361827; color: white;">
+                    <span class="small fw-semibold text-uppercase">Total a Cobrar:</span>
+                    <h4 class="fw-bold m-0">$<span id="txt_monto_total">0.00</span></h4>
+                </div>
+
+                <button type="submit" class="btn w-100 text-white fw-bold py-2 btn-sm rounded-3 shadow-sm" style="background-color: #a64b6b;">
+                    <i class="bi bi-receipt-cutoff me-1"></i> Generar Ticket de Venta
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: HISTORIAL GENERAL DE VENTAS -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="p-3 text-dark bg-light d-flex justify-between align-items-center border-bottom">
+                <span class="fw-bold text-uppercase small text-secondary"><i class="bi bi-clock-history me-2"></i>Historial de Tickets Emitidos</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th class="ps-4">Folio</th>
+                                <th>Fecha</th>
+                                <th>Cliente VIP</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Estatus</th>
+                                <th class="text-center" style="width: 120px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for venta in page_obj %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark">{{ venta.folio }}</td>
+                                <td class="text-muted">{{ venta.fecha|date:"d/m/Y" }}</td>
+                                <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</td>
+                                <td class="text-end fw-bold text-dark">${{ venta.total }}</td>
+                                <td class="text-center">
+                                    {% if venta.estatus == 'Completada' %}
+                                        <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill fw-bold">Completada</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-pill fw-bold">Cancelada</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if venta.estatus == 'Completada' %}
+                                        <a href="{% url 'cancelar_venta' venta.id %}" class="btn btn-sm btn-outline-danger px-2 py-0 extra-small fw-bold" onclick="return confirm('¿Segura que deseas cancelar esta venta y regresar los cosméticos al almacén?')">
+                                            <i class="bi bi-x-circle-fill"></i> Cancelar
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted extra-small italic">Sin acciones</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No se registran ventas realizadas el día de hoy en esta sucursal.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             
-            const fila = document.createElement("tr");
-            fila.innerHTML = `
-                <td class="ps-3 py-3">
-                    <span class="d-block fw-bold text-dark mb-1">${nombre}</span>
-                    <input type="hidden" name="producto_ids" value="${id}">
-                    <input type="hidden" class="input-precio" value="${precio}">
-                    <span class="text-muted small" style="font-size: 0.75rem;">Disponibles: <span class="badge bg-secondary px-2">${stockMax} pzs</span></span>
+            <!-- PAGINACIÓN PREMIUM -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer bg-white border-0 py-3 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-sm m-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Anterior</a></li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if query %}&buscar_folio={{ query }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&buscar_folio={{ query }}{% endif %}">Siguiente</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- LÓGICA DE JAVASCRIPT EXCLUSIVA DEL CARRITO COMPARTIDO -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnCargar = document.getElementById('btn_cargar_item');
+        const selectorProducto = document.getElementById('selector_producto');
+        const inputCantidad = document.getElementById('cantidad_selector');
+        const tablaBolsa = document.getElementById('tabla_bolsa_compras').getElementsByTagName('tbody')[0];
+        const txtMontoTotal = document.getElementById('txt_monto_total');
+
+        btnCargar.addEventListener('click', function() {
+            const pId = selectorProducto.value;
+            const optionSeleccionada = selectorProducto.options[selectorProducto.selectedIndex];
+            
+            if (!pId) return;
+
+            const pNombre = optionSeleccionada.text.split(' [')[0]; // Limpiamos el texto para dejar solo el nombre
+            const pPrecio = parseFloat(optionSeleccionada.getAttribute('data-precio'));
+            const pStock = parseInt(optionSeleccionada.getAttribute('data-stock'));
+            const pCantidad = parseInt(inputCantidad.value);
+
+            if (pCantidad <= 0 || isNaN(pCantidad)) {
+                alert("Por favor ingresa una cantidad válida.");
+                return;
+            }
+
+            if (pCantidad > pStock) {
+                alert(`¡Existencias Insuficientes! Solo cuentas con ${pStock} piezas de este producto en el almacén de esta sucursal.`);
+                return;
+            }
+
+            // Validar si el cosmético ya está en la bolsa
+            let filaExistente = document.getElementById(`fila-carrito-${pId}`);
+            if (filaExistente) {
+                let inputCantExistente = filaExistente.querySelector('.cant-field');
+                let nuevaSumaCant = parseInt(inputCantExistente.value) + pCantidad;
+
+                if (nuevaSumaCant > pStock) {
+                    alert(`No puedes agregar más unidades de las existentes en inventario (${pStock} pzs).`);
+                    return;
+                }
+
+                inputCantExistente.value = nuevaSumaCant;
+                let celdaSubtotal = filaExistente.querySelector('.subtotal-field');
+                celdaSubtotal.innerText = `$${(nuevaSumaCant * pPrecio).toFixed(2)}`;
+                calcularTotalesBolsa();
+                return;
+            }
+
+            // Inyectar el nuevo renglón para enviarlo mediante POST al servidor
+            const nuevaFila = tablaBolsa.insertRow();
+            nuevaFila.id = `fila-carrito-${pId}`;
+            
+            const subtotalInicial = pCantidad * pPrecio;
+
+            nuevaFila.innerHTML = `
+                <td class="ps-2 fw-medium">
+                    <input type="hidden" name="producto_ids" value="${pId}">
+                    ${pNombre}
                 </td>
-                <td class="text-end fw-bold text-secondary pe-3">$${precio.toFixed(2)}</td>
-                <td class="text-center px-3">
-                    <input type="number" min="1" max="${stockMax}" name="cantidades_prod" 
-                           class="form-control form-control-sm input-cantidad-v text-center mx-auto fw-bold text-dark" 
-                           value="1" data-stock="${stockMax}" required style="max-width: 80px; border-color: #ced4da;">
+                <td>
+                    <input type="number" name="cantidades_prod" class="form-control form-control-sm p-0 text-center border-0 bg-transparent cant-field fw-bold" readonly value="${pCantidad}">
+                </td>
+                <td class="text-end pe-2 fw-bold text-dark subtotal-field">$${subtotalInicial.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-link link-danger p-0 m-0 border-0" onclick="quitarItemBolsa(${pId})">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
                 </td>
             `;
-            tablaVenta.appendChild(fila);
+
+            selectorProducto.value = "";
+            inputCantidad.value = "1";
+            calcularTotalesBolsa();
         });
-        
-        Array.from(tablaVenta.querySelectorAll('.input-cantidad-v')).forEach(input => {
-            input.addEventListener('input', function() {
-                validarStockFila(this);
-                calcularTotalesVenta();
+
+        window.quitarItemBolsa = function(id) {
+            document.getElementById(`fila-carrito-${id}`).remove();
+            calcularTotalesBolsa();
+        };
+
+        function calcularTotalesBolsa() {
+            let totalAcumulado = 0;
+            document.querySelectorAll('.subtotal-field').forEach(celda => {
+                totalAcumulado += parseFloat(celda.innerText.replace('$', ''));
             });
-        });
-        calcularTotalesVenta();
+            txtMontoTotal.innerText = totalAcumulado.toFixed(2);
+        }
     });
-    
-    // Alerta interactiva de falta de Stock
-    function validarStockFila(input) {
-        const stockMax = parseInt(input.getAttribute("data-stock")) || 0;
-        const cantPedida = parseInt(input.value) || 0;
-        
-        if (cantPedida > stockMax) {
-            input.setCustomValidity(`¡Stock insuficiente! Solo quedan ${stockMax} unidades de este artículo.`);
-            input.classList.add("is-invalid");
-            input.reportValidity();
-        } else {
-            input.setCustomValidity("");
-            input.classList.remove("is-invalid");
-        }
-    }
-    
-    function calcularTotalesVenta() {
-        let totalAcumulado = 0;
-        const filas = tablaVenta.querySelectorAll("tr");
-        
-        if(filas.length > 0 && !document.getElementById("row-vacio-venta")) {
-            filas.forEach(fila => {
-                const precioInput = fila.querySelector(".input-precio");
-                const cantidadInput = fila.querySelector(".input-cantidad-v");
-                if (precioInput && cantidadInput) {
-                    const precio = parseFloat(precioInput.value) || 0;
-                    const cantidad = parseInt(cantidadInput.value) || 0;
-                    totalAcumulado += (precio * cantidad);
-                }
-            });
-        }
-        document.getElementById("txtTotalVenta").innerText = `$${totalAcumulado.toFixed(2)}`;
-    }
-});
 </script>
+
+<style>
+    .extra-small {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+</style>
 {% endblock %}
