@@ -3,13 +3,13 @@ from django.core.paginator import Paginator
 from .models import Cliente
 
 def pageclientes(request, pk_editar=None):
-    # --- FORMULARIO DE EDICIÓN ---
+    # FORMULARIO
     cliente_a_editar = None
     if pk_editar:
         # Si viene un ID en la URL, buscamos al cliente para meterlo al formulario
         cliente_a_editar = get_object_or_404(Cliente, pk=pk_editar)
 
-    # --- SECCIÓN DE CLIENTES ACTIVOS ---
+    # --- CLIENTES ACTIVOS ---
     query = request.GET.get('q', '')
     if query:
         consultaclientes = Cliente.objects.filter(
@@ -24,7 +24,7 @@ def pageclientes(request, pk_editar=None):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # --- SECCIÓN DE CLIENTES INACTIVOS ---
+    # --- CLIENTES INACTIVOS ---
     query_inactivo = request.GET.get('q_inactivo', '')
     if query_inactivo:
         clientes_inactivos = Cliente.objects.filter(
@@ -77,7 +77,7 @@ def nuevo_cliente(request):
         )
     return redirect('pageclientes')
 
-
+#Dar de baja a un cliente
 def eliminar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     cliente.estatus = False  # Desactivar
@@ -85,7 +85,7 @@ def eliminar_cliente(request, pk):
     return redirect('pageclientes')
 
 
-# NUEVA ACCIÓN: Reactivar un cliente
+# Reactivar un cliente
 def reactivar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     cliente.estatus = True  # Volver a activar

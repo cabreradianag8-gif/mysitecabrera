@@ -76,7 +76,7 @@ def actualizar_empleado(request, pk):
 
 def eliminar_empleado(request, pk):
     empleado = get_object_or_404(empleados, pk=pk)
-    empleado.status = False  # <-- Usando tu campo exacto de borrado lógico
+    empleado.status = False  
     empleado.save()
     return redirect('rutapageempleados')
 

@@ -1,7 +1,7 @@
 from django.db import models
 from proveedores.models import Proveedores
 from productos.models import Producto
-from inventarios.models import Inventario  # Importamos tu app de Inventarios
+from inventarios.models import Inventario  
 
 class Compras(models.Model):
     ESTATUS_CHOICES = [
@@ -19,19 +19,19 @@ class Compras(models.Model):
     # Muchos a Muchos con proveedores
     proveedor = models.ManyToManyField(Proveedores)
     
-    # Muchos a Muchos con Producto usando la tabla intermedia explícita
+    # Muchos a Muchos con Producto 
     producto = models.ManyToManyField(Producto, through='DetalleCompra')
 
     def __str__(self):
         return f"{self.folio} ({self.estatus})"
 
 
-# Tu tabla puente explícita adaptada para conectar con Inventarios
+# Tu tabla puente  para conectar con Inventarios
 class DetalleCompra(models.Model):
     compra = models.ForeignKey(Compras, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     
-    # El eslabón clave: conecta directamente el renglón con el stock de la sucursal
+    # conecta directamente el renglón con el stock de la sucursal
     inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE)
     
     cantidad = models.IntegerField()

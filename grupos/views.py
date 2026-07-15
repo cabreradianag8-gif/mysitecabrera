@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from .models import grupos_grupos
 import datetime
 
-# 1. CONSULTAR Y LISTAR (Con buscador y paginación)
+# 1. CONSULTAR Y LISTAR 
 def pagegrupos(request):
     query = request.GET.get('buscar_nombre', '')
     if query:
@@ -16,7 +16,7 @@ def pagegrupos(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Lógica para detectar si se está EDITANDO un grupo
+    #  detectar si se está EDITANDO un grupo
     editar_id = request.GET.get('editar', None)
     grupo_a_editar = None
     if editar_id:
@@ -25,7 +25,7 @@ def pagegrupos(request):
     context = {
         'page_obj': page_obj,
         'query': query,
-        'grupo_a_editar': grupo_a_editar, # Mandamos el grupo si se va a editar
+        'grupo_a_editar': grupo_a_editar, 
         'fecha_hoy': datetime.date.today().strftime('%Y-%m-%d')
     }
     return render(request, 'grupos/grupos.html', context)

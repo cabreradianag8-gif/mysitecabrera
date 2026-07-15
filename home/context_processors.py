@@ -1,4 +1,4 @@
-from usuarios.models import grupos_usuarios  # Tu modelo personalizado
+from usuarios.models import grupos_usuarios  
 
 def roles_usuario(request):
     """

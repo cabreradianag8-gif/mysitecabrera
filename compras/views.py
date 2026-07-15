@@ -33,7 +33,7 @@ def registrar_compra(request):
     if request.method == 'POST':
         proveedores_ids = request.POST.getlist('proveedores')
         
-        # Listas dinámicas del desglose enviado desde la tabla de JS
+        # Listas dinámicas 
         inventarios_ids = request.POST.getlist('inventarios[]')
         cantidades = request.POST.getlist('cantidades[]')
         costos = request.POST.getlist('costos[]')
@@ -44,21 +44,21 @@ def registrar_compra(request):
 
         try:
             with transaction.atomic():
-                # 1. 🤖 ASIGNACIÓN AUTOMÁTICA DE FECHA Y FOLIO UNICO
+                # 1. ASIGNACIÓN AUTOMÁTICA DE FECHA Y FOLIO UNICO
                 ahora = datetime.now()
                 fecha_automatica = ahora.date()
-                # Genera un folio único automático, ej: COMP-20260713-4829
+                # Genera un folio único automático
                 folio_automatico = f"COMP-{ahora.strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
                 
-                # 2. 🧮 CÁLCULO AUTOMÁTICO DE VALORES MONETARIOS
+                # 2. CÁLCULO AUTOMÁTICO DE VALORES MONETARIOS
                 calculo_subtotal = 0.0
                 for cant, costo in zip(cantidades, costos):
                     calculo_subtotal += int(cant) * float(costo)
                 
-                calculo_iva = calculo_subtotal * 0.16  # IVA estándar del 16%
+                calculo_iva = calculo_subtotal * 0.16  
                 calculo_total = calculo_subtotal + calculo_iva
 
-                # 3. GUARDAR EN LA BASE DE DATOS (Mismos campos del modelo)
+                # 3. GUARDAR EN LA BASE DE DATOS 
                 nueva_compra = Compras.objects.create(
                     folio=folio_automatico,
                     fecha=fecha_automatica,

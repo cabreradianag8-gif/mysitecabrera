@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
-from usuarios.models import grupos_usuarios  # Importación de tu modelo exacto
+from usuarios.models import grupos_usuarios  
 
 def login_view(request):
     """
@@ -13,7 +13,7 @@ def login_view(request):
         user_input = request.POST.get('usuario')
         pass_input = request.POST.get('password')
         
-        # 1. Buscamos directamente en tu tabla personalizada (como en tu DBeaver)
+        # 1. Buscamos directamente en la Tabla 
         perfil = grupos_usuarios.objects.filter(
             usuario=user_input, 
             passwd=pass_input, 
@@ -42,8 +42,8 @@ def login_view(request):
 
 @login_required
 def index(request):
-    # Ya no necesitas armar el diccionario 'context' con los roles aquí,
-    # el procesador de contexto lo hace por ti en segundo plano.
+    # Ya NO se arma el diccionario 'context' con los roles aquí,
+    # el procesador de contexto lo hace en segundo plano.
     return render(request, 'home/index.html')
 
 

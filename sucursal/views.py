@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from .models import Sucursal
 from empleados.models import empleados
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from .models import Sucursal
@@ -31,7 +30,7 @@ def pagesucursal_view(request, pk_editar=None):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # --- 2. BUSCADOR Y LÓGICA DE SUCURSALES INACTIVAS (¡CORREGIDO!) ---
+    # --- 2. BUSCADOR Y LÓGICA DE SUCURSALES INACTIVAS 
     query_inactivo = request.GET.get('q_inactivo', '')
     if query_inactivo:
         sucursales_inactivas = Sucursal.objects.filter(nombre__icontains=query_inactivo, status=False).order_by('-id')

@@ -11,6 +11,6 @@ urlpatterns = [
     # Editar / Actualizar
     path('usuarios/actualizar/<int:usuario_id>/', views.actualizar_usuario, name='actualizar_usuario'),
     
-    # Eliminar / Cambiar Estatus (Borrado lógico)
+    #  Cambiar Estatus 
     path('usuarios/estatus/<int:usuario_id>/', views.cambiar_estatus_usuario, name='cambiar_estatus_usuario'),
 ]

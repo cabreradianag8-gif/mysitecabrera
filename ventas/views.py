@@ -6,7 +6,7 @@ from .models import Ventas, DetalleVenta
 from clientes.models import Cliente
 from productos.models import Producto
 from sucursal.models import Sucursal
-from inventarios.models import Inventario # Tu modelo intermedio de stock por sucursal
+from inventarios.models import Inventario 
 
 def seleccionar_sucursal_view(request):
     """
@@ -31,14 +31,14 @@ def modulo_ventas_view(request):
     sucursal_actual = get_object_or_404(Sucursal, id=sucursal_id)
     lista_clientes = Cliente.objects.filter(estatus=True).order_by('id')
     
-    # NUEVA LÓGICA FILTRADA: Traemos los inventarios de esta sucursal que tengan stock > 0
+    # Traemos los inventarios de esta sucursal que tengan stock > 0
     inventarios_sucursal = Inventario.objects.filter(
         sucursal=sucursal_actual, 
         cantidad__gt=0, 
         producto__estatus=True
     ).select_related('producto').order_by('producto__nombre')
     
-    # Generador automático de folios original
+    # Generador automático de folios 
     ultima_venta = Ventas.objects.all().order_by('id').last()
     siguiente_id = (ultima_venta.id + 1) if ultima_venta else 1
     proximo_folio = f"VTA-{siguiente_id:04d}"
@@ -106,7 +106,7 @@ def nueva_venta(request):
                         prod_instancia = get_object_or_404(Producto, id=producto_ids[i])
                         cant = int(cantidades[i])
                         
-                        # MODIFICACIÓN DE STOCK: Buscamos el registro en la tabla Inventario de esta sucursal
+                        # Buscamos el registro en la tabla Inventario de esta sucursal
                         inv_producto = Inventario.objects.filter(producto=prod_instancia, sucursal=sucursal_instancia).first()
                         
                         if inv_producto and inv_producto.cantidad >= cant:
@@ -115,7 +115,7 @@ def nueva_venta(request):
                                 producto=prod_instancia,
                                 cantidad=cant
                             )
-                            # Descontamos del inventario regional de la sucursal
+                            # Descontamos del inventario  de la sucursal
                             inv_producto.cantidad -= cant
                             inv_producto.save()
                         else:

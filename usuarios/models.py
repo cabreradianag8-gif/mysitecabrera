@@ -1,6 +1,6 @@
 from django.db import models
 from grupos.models import grupos_grupos
-from empleados.models import empleados as EmpleadoModel # Importamos tu clase exacta de la foto
+from empleados.models import empleados as EmpleadoModel 
 
 class grupos_usuarios(models.Model):
     nombre = models.CharField(max_length=100)

@@ -15,7 +15,7 @@ def pageinventarios(request, pk_editar=None):
     query = request.GET.get('q', '')
     sucursal_id = request.GET.get('sucursal', '')
     
-    # Detectar si el usuario quiere ver la papelera (?ver=papelera)
+    # Detectar si el usuario quiere ver la papelera 
     ver_seccion = request.GET.get('ver', 'activos') 
     
     if ver_seccion == 'papelera':

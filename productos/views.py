@@ -53,7 +53,6 @@ def nuevo_producto(request):
         Producto.objects.create(
             nombre=request.POST.get('nombre'),
             precio=request.POST.get('precio'),
-            # Se elimina el campo stock ya que ahora vive en Inventarios
             descripcion=request.POST.get('descripcion'),
             categoria=request.POST.get('categoria')
         )
@@ -65,7 +64,6 @@ def actualizar_producto(request, pk):
     if request.method == 'POST':
         producto.nombre = request.POST.get('nombre')
         producto.precio = request.POST.get('precio')
-        # Se elimina el campo stock ya que ahora vive en Inventarios
         producto.descripcion = request.POST.get('descripcion')
         producto.categoria = request.POST.get('categoria')
         producto.save()
