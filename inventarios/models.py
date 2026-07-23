@@ -16,3 +16,4 @@ class Inventario(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} - {self.sucursal.nombre} ({self.cantidad} pzas)"
+        

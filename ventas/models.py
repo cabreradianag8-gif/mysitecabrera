@@ -15,7 +15,7 @@ class Ventas(models.Model):
     estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Completada')
     
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='mis_ventas')
-    # Añadimos la sucursal obligatoria para el descuento de inventario 
+    # sucursal obligatoria para el descuento de inventario 
     sucursal = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name='ventas_sucursal', null=True, blank=True)
     
     productos = models.ManyToManyField(Producto, through='DetalleVenta', related_name='ventas_asociadas')

@@ -41,7 +41,7 @@ def pagesucursal_view(request, pk_editar=None):
         'consultasucursales': page_obj,
         'query': query,
         'sucursales_inactivas': sucursales_inactivas,
-        'query_inactivo': query_inactivo,  # <-- Enviamos la variable limpia al HTML
+        'query_inactivo': query_inactivo,  
         'sucursal_a_editar': sucursal_a_editar,
         'todos_los_empleados': todos_los_empleados,
         'empleados_seleccionados_ids': empleados_seleccionados_ids
@@ -57,7 +57,7 @@ def nueva_sucursal(request):
             telefono=request.POST.get('telefono'),
             ciudad=request.POST.get('ciudad')
         )
-        # Al ser ManyToMany, obtenemos la lista completa de IDs de empleados seleccionados
+        # Al ser ManyToMany, obtenemos la lista completa de IDs de empleados 
         empleados_ids = request.POST.getlist('personal_ids')
         if empleados_ids:
             nueva.personal.set(empleados_ids)
@@ -74,7 +74,6 @@ def actualizar_sucursal(request, pk):
         sucursal.ciudad = request.POST.get('ciudad')
         sucursal.save()
         
-        # Sincronizamos la nueva lista de empleados seleccionados
         empleados_ids = request.POST.getlist('personal_ids')
         sucursal.personal.set(empleados_ids)
         

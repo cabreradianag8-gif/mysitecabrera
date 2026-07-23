@@ -8,10 +8,8 @@ class grupos_usuarios(models.Model):
     passwd = models.CharField(max_length=50)
     correo = models.EmailField()
     
-    # Relación 1 a Muchos
     grupo = models.ForeignKey(grupos_grupos, on_delete=models.PROTECT)
     
-    # Relación 1 a 1 con tu clase de empleados
     empleado = models.OneToOneField(EmpleadoModel, on_delete=models.CASCADE, null=True, blank=True)
 
     estatus = models.BooleanField(default=True)

@@ -54,7 +54,7 @@ def nuevo_usuario(request):
             correo=correo,
             grupo=grupo_obj,
             empleado=empleado_obj,
-            estatus=True # Se crea activo nativamente
+            estatus=True # Se crea activo 
         )
         messages.success(request, f"¡Usuario '{usuario}' registrado exitosamente!")
         return redirect('rutapageusuarios')
@@ -83,10 +83,8 @@ from django.db.models import F
 def cambiar_estatus_usuario(request, usuario_id):
     user_inst = get_object_or_404(grupos_usuarios, id=usuario_id)
     
-    # Determinamos el nuevo estado de forma inversa
     nuevo_estado = not user_inst.estatus
     
-    # Forzamos la actualización directa en SQL usando .filter().update()
     grupos_usuarios.objects.filter(id=usuario_id).update(estatus=nuevo_estado)
     
     if nuevo_estado:
